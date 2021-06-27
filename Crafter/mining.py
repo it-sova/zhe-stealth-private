@@ -16,9 +16,9 @@ ORE = 0x19B9
 INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-WEIGHT_LIMIT = MaxWeight() - 20
-WEIGHT_TO_UNLOAD = MaxWeight() - 50
-KEEP_TOOLS = 5
+WEIGHT_LIMIT = MaxWeight() - 60
+WEIGHT_TO_UNLOAD = MaxWeight() - 80
+KEEP_TOOLS = 3
 
 NEXT_TILE_MESSAGES = [
     "Too far",
@@ -112,10 +112,13 @@ def cancel_targets() -> None:
     CancelWaitTarget()
 
 def arms_lore() -> None:
-    cancel_targets()
-    WaitTargetObject(ObjAtLayer(RhandLayer()))
-    UseSkill("Arms Lore")
-    Wait(1000)
+    _pickaxe = ObjAtLayer(RhandLayer())
+    if IsObjectExists(_pickaxe):
+        log("Pickaxe in hand exists, using Arms Lore", "DEBUG")
+        cancel_targets()
+        WaitTargetObject(_pickaxe)
+        UseSkill("Arms Lore")
+        Wait(1000)
 
 def smelt() -> None:
     if FindType(ORE, Backpack()):
