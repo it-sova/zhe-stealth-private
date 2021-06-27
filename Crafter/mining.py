@@ -125,7 +125,8 @@ def smelt() -> None:
         for _ore in GetFoundList():
             _started = dt.now()
             UseObject(_ore)
-            WaitJournalLine(_started, "You put", 1000)
+            WaitJournalLine(_started, "You put", 10 * 1000)
+            Wait(1000)
         log("Smelting finished", "DEBUG")
     else:
         log("Weight limit reached but no ore found in pack", "CRITICAL")
@@ -237,6 +238,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
 
 if __name__ == "__main__":
     ClearSystemJournal()
+    smelt()
     UOSay(".autoloop 100")
     SetARStatus(True)
     SetPauseScriptOnDisconnectStatus(True)
