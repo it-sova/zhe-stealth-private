@@ -74,15 +74,17 @@ def log(message: str, level: str = "DEBUG") -> None:
 
 
 def hungry() -> bool:
-    if Luck() < 85:
-        if Count(FOOD) > 2:
-            UseType(FOOD, 0x0000)
-            Wait(1000)
-            log(f"Food left in backpack: {Count(FOOD)}", "INFO")
-            return True
-        else:
-            log("No more food left in backpack!", "ERROR")
-            return False
+    if Luck() < 50:
+        UOSay(".hungry")
+        Wait(1000)
+        # if Count(FOOD) > 2:
+        #     UseType(FOOD, 0x0000)
+        #     Wait(1000)
+        #     log(f"Food left in backpack: {Count(FOOD)}", "INFO")
+        #     return True
+        # else:
+        #     log("No more food left in backpack!", "ERROR")
+        #     return False
 
 # Script specific functions
 def find_tiles(center_x: int, center_y: int, radius: int) -> set[int, int, int, int]:
@@ -210,6 +212,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
     if newMoveXY(x, y, True, 0, True):
         log(f"Reached point {x}, {y}","DEBUG")
         if equip_pickaxe():
+            hungry()
             if Weight() >= WEIGHT_LIMIT:
                 log("Weight limit reached, going to smelt ore", "DEBUG")
                 if newMoveXY(config["forge"]["x"], config["forge"]["y"], True, 0, True):
@@ -238,7 +241,6 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
 
 if __name__ == "__main__":
     ClearSystemJournal()
-    smelt()
     UOSay(".autoloop 100")
     SetARStatus(True)
     SetPauseScriptOnDisconnectStatus(True)
