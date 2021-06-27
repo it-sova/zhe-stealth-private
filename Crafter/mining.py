@@ -228,8 +228,8 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                 WaitTargetTile(tile, x, y, z)
                 WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 10 * 60 * 1000)
         else:
-            # TODO: No more pickaxes in pack, craft some!
-            pass
+            log("Can't equip pickaxe, heading to bank to craft some", "DEBUG")
+            unload_to_bank()
 
 
 if __name__ == "__main__":
