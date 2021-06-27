@@ -1,0 +1,13 @@
+---
+config:
+  start_point:
+    x: 2577
+    y: 473
+
+  forge:
+    x: 2559
+    y: 478
+
+  bank:
+    x: 2514
+    y: 554
