@@ -231,7 +231,8 @@ def craft_tools() -> None:
 
 
 def mine(tile: int, x: int, y: int, z: int) -> None:
-    if newMoveXY(x, y, True, 0, True):
+    #if newMoveXY(x, y, True, 0, True):
+    if newMoveXYZ(x, y, z, 1, 0, True):
         log(f"Reached point {x}, {y}","DEBUG")
         if equip_pickaxe():
             hungry()
