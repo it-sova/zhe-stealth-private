@@ -266,6 +266,8 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
         else:
             log("Can't equip pickaxe, heading to bank to craft some", "DEBUG")
             unload_to_bank()
+    else:
+        log(f"Cant get to ming point {x},{y},{z}","ERROR")
 
 if __name__ == "__main__":
     ClearSystemJournal()
