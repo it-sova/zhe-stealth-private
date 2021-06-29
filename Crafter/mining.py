@@ -36,7 +36,7 @@ GEMS = [
     0x0F0F  # Star Sapphires
 ]
 NEXT_TILE_MESSAGES = [
-    "Too far",
+    "too far",
     "Looping aborted",
     "You stop",
     "reach that",
