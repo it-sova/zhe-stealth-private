@@ -261,7 +261,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                 WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 6 * 60 * 1000)
                 log(f"Finished mining at {x}, {y}", "DEBUG")
             else:
-                log("Failed to get target using pickaxe at {x}, {y}", "ERROR")
+                log(f"Failed to get target using pickaxe at {x}, {y}", "ERROR")
                 return
         else:
             log("Can't equip pickaxe, heading to bank to craft some", "DEBUG")
