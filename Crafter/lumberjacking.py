@@ -11,30 +11,25 @@ LOG_VERBOSITY = 1
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/858974853516230706/-KMww3sv9nxZLR8xZS8TSzzxaZt_FMREP-_z6zN09TFVMwOzzsJvmfrwz8KD2EkIpUPb"
 # Types
-PICKAXE = 0x0E85
+HATCHET =0x0F43
 FOOD = 0x097B
-CAVE_TILES = range(1339, 1358)
-ORE = 0x19B9
+TREE_TILES = [
+    3230,3272,3274,3275,
+    3276,3277,3278,3280,
+    3281,3283,3284,3286,
+    3287,3288,3289,3290,
+    3291,3292,3293,3294,
+    3295,3296,3299,3300,
+    3302,3303,3384,3385,
+    3391,3392,3394,3395,
+    3417,3440,3460
+]
+LOGS = 0x1BDD
 INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-WEIGHT_LIMIT = MaxWeight() - 50
 WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
-GEMS = [
-    0x0F10, # Emeralds
-    0x0F11, # Sapphires
-    0x0F12, # Sapphires-2
-    0x0F13, # Rubies
-    0x0F14, # Rubies-2
-    0x0F15, # Citrines
-    0x0F16, # Amethysts
-    0x0F17, # Amethysts-2
-    0x0F18, # Tourmalines
-    0x0F25, # Pieces of Amber
-    0x0F30, # Diamond
-    0x0F0F  # Star Sapphires
-]
 NEXT_TILE_MESSAGES = [
     "too far",
     "Looping aborted",
@@ -45,7 +40,7 @@ NEXT_TILE_MESSAGES = [
 ]
 
 # Script configuration
-TILE_SEARCH_RANGE = 10
+TILE_SEARCH_RANGE = 15
 
 # Helper functions
 def disconnect() -> None:
@@ -109,20 +104,20 @@ def find_tiles(center_x: int, center_y: int, radius: int) -> set[int, int, int, 
     _min_x, _min_y = center_x-radius, center_y-radius
     _max_x, _max_y = center_x+radius, center_y+radius
     _tiles_coordinates = []
-    for _tile in CAVE_TILES:
+    for _tile in TREE_TILES:
         _tiles_coordinates += GetStaticTilesArray(
             _min_x, _min_y, _max_x, _max_y, WorldNum(), _tile)
     log(f"Found {str(len(_tiles_coordinates))} tiles", "INFO")
     return _tiles_coordinates
 
-def equip_pickaxe() -> bool:
+def equip_hatchet() -> bool:
     if not ObjAtLayer(RhandLayer()):
-        if Count(PICKAXE) > 1:
-            Equipt(RhandLayer(), PICKAXE)
-            log(f"Pickaxe equipped, pickaxes left in backpack: {Count(PICKAXE)}", "DEBUG")
+        if Count(HATCHET) > 1:
+            Equipt(RhandLayer(), HATCHET)
+            log(f"Hatchet equipped, pickaxes left in backpack: {Count(HATCHET)}", "DEBUG")
             return True
         else:
-            log("No more pickaxes left in backpack", "INFO")
+            log("No more hatchets left in backpack", "INFO")
             return False
     return True
 
@@ -132,25 +127,13 @@ def cancel_targets() -> None:
     CancelWaitTarget()
 
 def arms_lore() -> None:
-    _pickaxe = ObjAtLayer(RhandLayer())
-    if IsObjectExists(_pickaxe):
-        log("Pickaxe in hand exists, using Arms Lore", "DEBUG")
+    _hatchet = ObjAtLayer(RhandLayer())
+    if IsObjectExists(_hatchet):
+        log("Hatchet in hand exists, using Arms Lore", "DEBUG")
         cancel_targets()
-        WaitTargetObject(_pickaxe)
+        WaitTargetObject(_hatchet)
         UseSkill("Arms Lore")
         Wait(1000)
-
-def smelt() -> None:
-    if FindType(ORE, Backpack()):
-        for _ore in GetFoundList():
-            _started = dt.now()
-            UseObject(_ore)
-            WaitJournalLine(_started, "You put", 10 * 1000)
-            Wait(1000)
-        log("Smelting finished", "DEBUG")
-    else:
-        log("Weight limit reached but no ore found in pack", "CRITICAL")
-        disconnect()
 
 def unload_to_bank() -> None:
     if newMoveXY(config["bank"]["x"], config["bank"]["y"], True, 0, True):
@@ -171,7 +154,7 @@ def unload_to_bank() -> None:
             Wait(1000)
         _bank = ObjAtLayer(BankLayer())
         log("Bank opened", "DEBUG")
-        if FindTypesArrayEx(GEMS+[INGOTS], [0xFFFF], [Backpack()], False):
+        if FindTypesArrayEx([LOGS], [0xFFFF], [Backpack()], False):
             for _item in GetFoundList():
                 MoveItem(_item, -1, _bank, 0, 0, 0)
                 Wait(2000)
@@ -182,7 +165,7 @@ def unload_to_bank() -> None:
 
 def statistics(container: int) -> None:
     AddToSystemJournal("==================")
-    if FindTypesArrayEx(GEMS + [INGOTS], [0xFFFF], [container], False):
+    if FindTypesArrayEx([LOGS], [0xFFFF], [container], False):
         for _item in GetFoundList():
             _item_tooltip = GetTooltip(_item)
             _match = re.search('^\d+\s([\w\s]+)', _item_tooltip)
@@ -193,8 +176,8 @@ def statistics(container: int) -> None:
 
 
 def grab_from_container(type: int, color: int, qty: int, container: int) -> bool:
-    if FindTypeEx(INGOTS, COPPER_COLOR, container):
-        Grab(FindItem(), 100)
+    if FindTypeEx(type, color, container) and FindQuantity >= qty:
+        Grab(FindItem(), qty)
         Wait(1000)
         log("Got ingots from bank", "DEBUG")
         return True
@@ -210,8 +193,8 @@ def craft_item(category: str, item: str) -> None:
         _started = dt.now()
         CancelAllMenuHooks()
         cancel_targets()
-        AutoMenu("What", category)
-        AutoMenu("What", item)
+        WaitMenu("What", category)
+        WaitMenu("What", item)
         WaitTargetObject(FindItem())
         UseType(TINKER_TOOLS, -1)
         WaitJournalLine(_started, "Looping finished", 15 * 1000)
@@ -219,68 +202,70 @@ def craft_item(category: str, item: str) -> None:
     Wait(500)
 
 def craft_tools() -> None:
-    if Count(TINKER_TOOLS) < 2 or Count(PICKAXE) < KEEP_TOOLS:
+    if Count(TINKER_TOOLS) < 2 or Count(HATCHET) < KEEP_TOOLS:
         log("Not enought tools in pack, let's craft some", "DEBUG")
-        grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer()))
+        if not FindTypeEx(INGOTS, COPPER_COLOR, Backpack()) or FindQuantity() < 30:
+            log("Not enought ingots in pack, let's get some", "DEBUG")
+            grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer()))
         while Count(TINKER_TOOLS) < 2:
             craft_item("Tools", "Tinker")
             Wait(1000)
-        while Count(PICKAXE) < KEEP_TOOLS:
-            craft_item("Deadly", "Pickaxe")
+        while Count(HATCHET) < KEEP_TOOLS:
+            craft_item("Deadly", "Hatchet")
             Wait(1000)
 
 
-def mine(tile: int, x: int, y: int, z: int) -> None:
-    #if newMoveXY(x, y, True, 0, True):
+def chop(tile: int, x: int, y: int, z: int) -> None:
     if newMoveXYZ(x, y, z, 1, 0, True):
         log(f"Reached point {x}, {y}","DEBUG")
-        if equip_pickaxe():
+        if equip_hatchet():
             hungry()
-            if Weight() >= WEIGHT_LIMIT:
-                log("Weight limit reached, going to smelt ore", "DEBUG")
-                if newMoveXY(config["forge"]["x"], config["forge"]["y"], True, 0, True):
-                    log("Reached forge", "DEBUG")
-                    smelt()
-                    if Weight() >= WEIGHT_TO_UNLOAD:
-                        log("Weight limit reached, heading to bank", "DEBUG")
-                        unload_to_bank()
-                        # Should use it because of 2nd floor above mine
-                        newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True)
-                    if newMoveXY(x, y, True, 0, True):
-                        log("Reached mining point", "DEBUG")
-                    else:
-                        log("Failed to return to mining point", "ERROR")
-                        return
+            if Weight() >= WEIGHT_TO_UNLOAD:
+                log("Weight limit reached, heading to bank", "DEBUG")
+                unload_to_bank()
+                if newMoveXY(x, y, True, 0, True):
+                    log("Reached chopping point", "DEBUG")
+                else:
+                    log("Failed to return to chopping point", "ERROR")
+                    return
             arms_lore()
             _started = dt.now()
             cancel_targets()
-            log(f"Started mining at {x}, {y}", "DEBUG")
+            log(f"Started chopping at {x}, {y}", "DEBUG")
             UseObject(ObjAtLayer(RhandLayer()))
             if WaitForTarget(2000):
                 WaitTargetTile(tile, x, y, z)
                 WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 6 * 60 * 1000)
-                log(f"Finished mining at {x}, {y}", "DEBUG")
+                log(f"Finished chopping at {x}, {y}", "DEBUG")
             else:
-                log(f"Failed to get target using pickaxe at {x}, {y}", "ERROR")
+                log(f"Failed to get target using hatchet at {x}, {y}", "ERROR")
                 return
         else:
-            log("Can't equip pickaxe, heading to bank to craft some", "DEBUG")
+            log("Can't equip hatchet, heading to bank to craft some", "DEBUG")
             unload_to_bank()
     else:
-        log(f"Cant get to ming point {x},{y},{z}","ERROR")
+        log(f"Cant get to chopping point {x},{y},{z}","ERROR")
 
 if __name__ == "__main__":
     ClearSystemJournal()
     UOSay(".autoloop 100")
     SetARStatus(True)
-    SetPauseScriptOnDisconnectStatus(True)
+    SetMoveOpenDoor(True)
     SetWarMode(False)
     config = get_character_config()
     while not Dead() and Connected():
         if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
-                for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
-                    tile, x, y, z = tile_set
-                    mine(tile, x, y, z)
+            for _point in config["points"]:
+                point_x, point_y = _point
+                log(f"Point: {point_x}, {point_y}", "DEBUG")
+                if newMoveXY(point_x, point_y, True, 0, True):
+                    log(f"Reached point: {point_x}, {point_y}", "DEBUG")
+                    for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
+                        tile, x, y, z = tile_set
+                        chop(tile, x, y, z)
+                else:
+                    log("Failed to get to point: {point_x}, {point_y}", "ERROR")
+                    break
         else:
             log("Failed to get to starting point! Overload?", "ERROR")
             Wait(2 * 60 * 1000)

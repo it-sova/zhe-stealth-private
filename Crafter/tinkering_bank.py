@@ -2,13 +2,23 @@ from py_stealth.methods import *
 from datetime import datetime as dt
 import inspect
 
-BANK_POINT = (2514, 554)
-CRAFT_POINT = (2498, 582)
+BANK_POINT = (1427, 1694)
+CRAFT_POINT = (1388, 1713)
+TRASH_POINT = (1426, 1701)
+TRASH_ID = 0x48B4B9A5
 RESOURCE_TYPE = 0x1BF2
 RESOURCE_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-ITEM_TYPE = 0x14FB
-STORE_TO_BANK = True
+# Lockpick
+# ITEM_TYPE = 0x14FB
+# Heating Stand
+ITEM_TYPE = 0x1849
+STORE_TO_BANK = False
+BAD_LOCATIONS = [
+    (1415,1704,15),
+    (1415,1702,11),
+    (1415,1700,7)
+]
 
 def cancel_targets() -> None:
     if TargetPresent():
@@ -60,12 +70,25 @@ def open_bank() -> None:
             if FindTypeEx(ITEM_TYPE, RESOURCE_COLOR, Backpack()):
                 if STORE_TO_BANK:
                     MoveItem(FindItem(), -1, ObjAtLayer(BankLayer()), 0, 0, 0)
-                else:
-                    DropHere(FindItem())
-                Wait(1000)
+                    Wait(1000)
         log("Bank opened", "DEBUG")
     else:
         log("Failed to reach bank", "ERROR")
+
+def trash_items():
+    if FindTypeEx(ITEM_TYPE, RESOURCE_COLOR, Backpack()):
+        log("Trashing items", "DEBUG")
+        for _item in GetFoundList():
+            MoveItem(_item, -1, TRASH_ID, 0, 0, 0)
+            Wait(1000)
+        log("Finished trashing", "DEBUG")
+
+def handle_attack(text: str, sender_name: str, sender_id: int):
+    if "attacking you" in text:
+        log(f"{sender_name} is attacking me", "INFO")
+        _data = {"content": f"{CharName()} | {sender_name} is attacking me !"}
+        UOSay(".guards")
+
 
 def grab_from_container(type: int, color: int, qty: int, container: int) -> bool:
     if FindTypeEx(RESOURCE_TYPE, RESOURCE_COLOR, container):
@@ -90,34 +113,50 @@ def craft_item(category: str, item: str) -> None:
         WaitMenu("What would you like to make?", item)
         WaitTargetObject(FindItem())
         UseType(TINKER_TOOLS, -1)
-        WaitJournalLine(_started, "Looping finished|aborted", 1 * 60 * 1000)
+        WaitJournalLine(_started, "finished|aborted", 10000)
     Wait(500)
 
 def craft_tools() -> None:
     pass
-    # if Count(TINKER_TOOLS) < 5:
-    #     log("Not enought tools in pack, let's craft some", "DEBUG")
-    #     while Count(TINKER_TOOLS) < 5:
-    #         craft_item("Tools", "Tinker")
-    #         Wait(1000)
+    if Count(TINKER_TOOLS) < 5:
+        log("Not enought tools in pack, let's craft some", "DEBUG")
+        while Count(TINKER_TOOLS) < 5:
+            craft_item("Tools", "Tinker")
+            Wait(1000)
 
 if __name__ == "__main__":
     bank_x, bank_y = BANK_POINT
     craft_x, craft_y = CRAFT_POINT
-
+    # Fuck the portals
+    for bad_location in BAD_LOCATIONS:
+        bad_x, bad_y, _ = bad_location
+        SetBadLocation(bad_x, bad_y)
+    # Fuck the portals 2nd time
+    SetBadObject(0x0F6C, 0xFFFF, 3)
+    SetEventProc("evSpeech", handle_attack)
     SetARStatus(True)
     ClearSystemJournal()
     SetPauseScriptOnDisconnectStatus(True)
     CancelAllMenuHooks()
     cancel_targets()
-    UOSay(".autoloop 5")
+    UOSay(".autoloop 1")
+    if newMoveXY(craft_x, craft_y, True, 0, True):
+        log("Reached crafting point", "DEBUG")
     while not Dead() and Connected():
-        if FindTypeEx(RESOURCE_TYPE, RESOURCE_COLOR, Backpack()) and FindFullQuantity() > 20:
-            log("Crafting item", "DEBUG")
-            craft_item("Tools", "lockpick")
+        if FindTypeEx(RESOURCE_TYPE, RESOURCE_COLOR, Backpack()) and FindQuantity() > 20:
+            log("Crafting started", "DEBUG")
+            craft_item("Tools", "Heating")
+            log("Crafting finished", "DEBUG")
             if FindTypeEx(RESOURCE_TYPE, RESOURCE_COLOR, Backpack()):
                 log(f"Resource left in pack: {FindFullQuantity()}", "INFO")
+            hungry()
         else:
+            if not STORE_TO_BANK:
+                log("Will trash items", "DEBUG")
+                if newMoveXY(TRASH_POINT[0], TRASH_POINT[1], True, 0, False):
+                    log("Reached trash point", "DEBUG")
+                    trash_items()
+                    Wait(1000)
             open_bank()
             grab_from_container(RESOURCE_TYPE, RESOURCE_COLOR, 500, ObjAtLayer(BankLayer()))
             if newMoveXY(craft_x, craft_y, True, 0, True):
