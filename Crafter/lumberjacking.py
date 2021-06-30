@@ -252,6 +252,7 @@ if __name__ == "__main__":
     SetARStatus(True)
     SetMoveOpenDoor(True)
     SetWarMode(False)
+    SetPauseScriptOnDisconnectStatus(False)
     config = get_character_config()
     while not Dead() and Connected():
         if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):

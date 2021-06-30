@@ -273,7 +273,7 @@ if __name__ == "__main__":
     ClearSystemJournal()
     UOSay(".autoloop 100")
     SetARStatus(True)
-    SetPauseScriptOnDisconnectStatus(True)
+    SetPauseScriptOnDisconnectStatus(False)
     SetWarMode(False)
     config = get_character_config()
     while not Dead() and Connected():
