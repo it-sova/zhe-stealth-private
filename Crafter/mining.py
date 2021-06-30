@@ -276,8 +276,11 @@ if __name__ == "__main__":
     SetPauseScriptOnDisconnectStatus(True)
     SetWarMode(False)
     config = get_character_config()
-    newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True)
     while not Dead() and Connected():
-        for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
-            tile, x, y, z = tile_set
-            mine(tile, x, y, z)
+        if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
+                for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
+                    tile, x, y, z = tile_set
+                    mine(tile, x, y, z)
+        else:
+            log("Failed to get to starting point! Overload?", "ERROR")
+            Wait(2 * 60 * 1000)
