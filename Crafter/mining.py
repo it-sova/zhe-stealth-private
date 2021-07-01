@@ -21,7 +21,6 @@ TINKER_TOOLS = 0x1EBC
 WEIGHT_LIMIT = MaxWeight() - 50
 WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
-ERRORS = 0
 GEMS = [
     0x0F10, # Emeralds
     0x0F11, # Sapphires
@@ -81,6 +80,7 @@ def get_character_config() -> object:
 
 
 def log(message: str, level: str = "DEBUG") -> None:
+    global errors;
     _verbosity_level = {
         "DEBUG":    1,
         "INFO":     2,
@@ -92,10 +92,10 @@ def log(message: str, level: str = "DEBUG") -> None:
         AddToSystemJournal(f"[{level}] ({inspect.stack()[1].function}) {message}")
 
     if level == "ERROR":
-        ERRORS =+ 1
+        errors =+ 1
 
-    if ERRORS > 10:
-        ERRORS = 0
+    if errors > 10:
+        errors = 0
         Disconnect()
 
 
@@ -245,7 +245,7 @@ def move_x_y(x: int, y:int) -> bool:
             log(f"Reached point {x}, {y}", "DEBUG")
         else:
             log(f"Failed to reach point {x}, {y}", "DEBUG")
-            if GetStam() < 10:
+            if Stam() < 10:
                 Wait(2 * 60 * 1000)
             _try += 1
             if _try >= 9:
@@ -289,6 +289,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             unload_to_bank()
 
 if __name__ == "__main__":
+    errors = 0
     ClearSystemJournal()
     UOSay(".autoloop 100")
     SetARStatus(True)

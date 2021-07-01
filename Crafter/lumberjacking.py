@@ -30,7 +30,6 @@ COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
 WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
-ERRORS = 0
 NEXT_TILE_MESSAGES = [
     "too far",
     "Looping aborted",
@@ -76,6 +75,7 @@ def get_character_config() -> object:
 
 
 def log(message: str, level: str = "DEBUG") -> None:
+    global errors;
     _verbosity_level = {
         "DEBUG":    1,
         "INFO":     2,
@@ -87,10 +87,10 @@ def log(message: str, level: str = "DEBUG") -> None:
         AddToSystemJournal(f"[{level}] ({inspect.stack()[1].function}) {message}")
 
     if level == "ERROR":
-        ERRORS =+ 1
+        errors =+ 1
 
-    if ERRORS > 10:
-        ERRORS = 0
+    if errors > 10:
+        errors = 0
         Disconnect()
 
 
@@ -255,6 +255,7 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
         log(f"Cant get to chopping point {x},{y},{z}","ERROR")
 
 if __name__ == "__main__":
+    errors = 0
     ClearSystemJournal()
     UOSay(".autoloop 100")
     SetARStatus(True)
