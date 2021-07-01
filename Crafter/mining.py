@@ -18,8 +18,8 @@ ORE = 0x19B9
 INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-WEIGHT_LIMIT = MaxWeight() - 100
-WEIGHT_TO_UNLOAD = MaxWeight() - 80
+WEIGHT_LIMIT = MaxWeight() - 60
+WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
 GEMS = [
     0x0F10, # Emeralds
@@ -156,9 +156,6 @@ def smelt() -> None:
             WaitJournalLine(_started, "You put", 10 * 1000)
             Wait(1000)
         log("Smelting finished", "DEBUG")
-    else:
-        log("Weight limit reached but no ore found in pack", "CRITICAL")
-        disconnect()
 
 def unload_to_bank() -> None:
     if move_x_y(config["bank"]["x"], config["bank"]["y"]):
@@ -237,29 +234,33 @@ def craft_tools() -> None:
             craft_item("Deadly", "Pickaxe")
             Wait(1000)
 
-def check_stamina():
-    if Stam() < 20:
-        log(f"Staming is low, waiting for 2 minutes", "DEBUG")
-        Wait(2 * 60 * 1000)
+def check_stamina() -> None:
+    if Stam() < MaxStam():
+        log(f"Stamina is low, waiting for full regeneration", "DEBUG")
+        while Stam() < (MaxStam() - 10):
+            Wait(1000)
 
 def move_x_y(x: int, y:int) -> bool:
     _try = 0
     check_stamina()
     log(f"Heading to point {x}, {y}", "DEBUG")
-    while not newMoveXY(x, y, True, 1, True):
+    while not newMoveXY(x, y, True, 0, True):
         check_stamina()
-        if newMoveXY(x, y, True, 1, True):
+        if newMoveXY(x, y, True, 0, True):
             log(f"Reached point {x}, {y}", "DEBUG")
+            return True
         else:
             log(f"Failed to reach point {x}, {y}", "DEBUG")
             _try += 1
             if _try >= 9:
                 log(f"Failed to reach point {x}, {y} after 10 attempts", "ERROR")
+            return False
+    return True
 
 
 def mine(tile: int, x: int, y: int, z: int) -> None:
     #if newMoveXY(x, y, True, 0, True):
-    if newMoveXYZ(x, y, z, 1, 0, True):
+    if move_x_y(x, y):
         log(f"Reached point {x}, {y}","DEBUG")
         if equip_pickaxe():
             hungry()
@@ -284,7 +285,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             UseObject(ObjAtLayer(RhandLayer()))
             if WaitForTarget(2000):
                 WaitTargetTile(tile, x, y, z)
-                WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 6 * 60 * 1000)
+                WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 10 * 60 * 1000)
                 log(f"Finished mining at {x}, {y}", "DEBUG")
             else:
                 log(f"Failed to get target using pickaxe at {x}, {y}", "ERROR")

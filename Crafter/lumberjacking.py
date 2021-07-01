@@ -184,7 +184,7 @@ def statistics(container: int) -> None:
 
 
 def grab_from_container(type: int, color: int, qty: int, container: int) -> bool:
-    if FindTypeEx(type, color, container) and FindQuantity >= qty:
+    if FindTypeEx(type, color, container) and FindQuantity() >= qty:
         Grab(FindItem(), qty)
         Wait(1000)
         log("Got ingots from bank", "DEBUG")
@@ -243,7 +243,7 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
             UseObject(ObjAtLayer(RhandLayer()))
             if WaitForTarget(2000):
                 WaitTargetTile(tile, x, y, z)
-                WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 6 * 60 * 1000)
+                WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 10 * 60 * 1000)
                 log(f"Finished chopping at {x}, {y}", "DEBUG")
             else:
                 log(f"Failed to get target using hatchet at {x}, {y}", "ERROR")
