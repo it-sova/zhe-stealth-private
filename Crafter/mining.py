@@ -18,8 +18,8 @@ ORE = 0x19B9
 INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-WEIGHT_LIMIT = MaxWeight() - 50
-WEIGHT_TO_UNLOAD = MaxWeight() - 60
+WEIGHT_LIMIT = MaxWeight() - 100
+WEIGHT_TO_UNLOAD = MaxWeight() - 80
 KEEP_TOOLS = 3
 GEMS = [
     0x0F10, # Emeralds
@@ -237,16 +237,21 @@ def craft_tools() -> None:
             craft_item("Deadly", "Pickaxe")
             Wait(1000)
 
+def check_stamina():
+    if Stam() < 20:
+        log(f"Staming is low, waiting for 2 minutes", "DEBUG")
+        Wait(2 * 60 * 1000)
+
 def move_x_y(x: int, y:int) -> bool:
     _try = 0
+    check_stamina()
     log(f"Heading to point {x}, {y}", "DEBUG")
     while not newMoveXY(x, y, True, 1, True):
+        check_stamina()
         if newMoveXY(x, y, True, 1, True):
             log(f"Reached point {x}, {y}", "DEBUG")
         else:
             log(f"Failed to reach point {x}, {y}", "DEBUG")
-            if Stam() < 10:
-                Wait(2 * 60 * 1000)
             _try += 1
             if _try >= 9:
                 log(f"Failed to reach point {x}, {y} after 10 attempts", "ERROR")
@@ -297,6 +302,7 @@ if __name__ == "__main__":
     SetWarMode(False)
     config = get_character_config()
     while not Dead() and Connected():
+        check_stamina()
         move_x_y(config["start_point"]["x"], config["start_point"]["y"])
         for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
             tile, x, y, z = tile_set
