@@ -36,6 +36,13 @@ def log(message: str, level: str = "DEBUG") -> None:
     if _verbosity_level[level] >= 1:
         AddToSystemJournal(f"[{level}] ({inspect.stack()[1].function}) {message}")
 
+    if level == "ERROR":
+        ERRORS =+ 1
+
+    if ERRORS > 10:
+        ERRORS = 0
+        Disconnect()
+
 
 def hungry() -> bool:
     if Luck() < 50:

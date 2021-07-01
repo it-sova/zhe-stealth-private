@@ -21,6 +21,7 @@ TINKER_TOOLS = 0x1EBC
 WEIGHT_LIMIT = MaxWeight() - 50
 WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
+ERRORS = 0
 GEMS = [
     0x0F10, # Emeralds
     0x0F11, # Sapphires
@@ -90,6 +91,13 @@ def log(message: str, level: str = "DEBUG") -> None:
     if _verbosity_level[level] >= LOG_VERBOSITY:
         AddToSystemJournal(f"[{level}] ({inspect.stack()[1].function}) {message}")
 
+    if level == "ERROR":
+        ERRORS =+ 1
+
+    if ERRORS > 10:
+        ERRORS = 0
+        Disconnect()
+
 
 def hungry() -> bool:
     if Luck() < 50:
@@ -153,7 +161,7 @@ def smelt() -> None:
         disconnect()
 
 def unload_to_bank() -> None:
-    if newMoveXY(config["bank"]["x"], config["bank"]["y"], True, 0, True):
+    if move_x_y(config["bank"]["x"], config["bank"]["y"]):
         log("Reached bank", "DEBUG")
         log(f"Before backpack usage, LastContainer == {LastContainer()}", "DEBUG")
         while LastContainer() != Backpack():
@@ -229,6 +237,20 @@ def craft_tools() -> None:
             craft_item("Deadly", "Pickaxe")
             Wait(1000)
 
+def move_x_y(x: int, y:int) -> bool:
+    _try = 0
+    log(f"Heading to point {x}, {y}", "DEBUG")
+    while not newMoveXY(x, y, True, 1, True):
+        if newMoveXY(x, y, True, 1, True):
+            log(f"Reached point {x}, {y}", "DEBUG")
+        else:
+            log(f"Failed to reach point {x}, {y}", "DEBUG")
+            if GetStam() < 10:
+                Wait(2 * 60 * 1000)
+            _try += 1
+            if _try >= 9:
+                log(f"Failed to reach point {x}, {y} after 10 attempts", "ERROR")
+
 
 def mine(tile: int, x: int, y: int, z: int) -> None:
     #if newMoveXY(x, y, True, 0, True):
@@ -238,18 +260,17 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             hungry()
             if Weight() >= WEIGHT_LIMIT:
                 log("Weight limit reached, going to smelt ore", "DEBUG")
-                if newMoveXY(config["forge"]["x"], config["forge"]["y"], True, 0, True):
+                if move_x_y(config["forge"]["x"], config["forge"]["y"]):
                     log("Reached forge", "DEBUG")
                     smelt()
                     if Weight() >= WEIGHT_TO_UNLOAD:
                         log("Weight limit reached, heading to bank", "DEBUG")
                         unload_to_bank()
                         # Should use it because of 2nd floor above mine
-                        newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True)
-                    if newMoveXY(x, y, True, 0, True):
+                        move_x_y(config["start_point"]["x"], config["start_point"]["y"])
+                    if move_x_y(x, y):
                         log("Reached mining point", "DEBUG")
                     else:
-                        log("Failed to return to mining point", "ERROR")
                         return
             arms_lore()
             _started = dt.now()
@@ -266,21 +287,16 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
         else:
             log("Can't equip pickaxe, heading to bank to craft some", "DEBUG")
             unload_to_bank()
-    else:
-        log(f"Cant get to ming point {x},{y},{z}","ERROR")
 
 if __name__ == "__main__":
     ClearSystemJournal()
     UOSay(".autoloop 100")
     SetARStatus(True)
-    SetPauseScriptOnDisconnectStatus(False)
+    SetPauseScriptOnDisconnectStatus(True)
     SetWarMode(False)
     config = get_character_config()
     while not Dead() and Connected():
-        if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
-                for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
-                    tile, x, y, z = tile_set
-                    mine(tile, x, y, z)
-        else:
-            log("Failed to get to starting point! Overload?", "ERROR")
-            Wait(2 * 60 * 1000)
+        move_x_y(config["start_point"]["x"], config["start_point"]["y"])
+        for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
+            tile, x, y, z = tile_set
+            mine(tile, x, y, z)

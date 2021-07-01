@@ -30,6 +30,7 @@ COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
 WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
+ERRORS = 0
 NEXT_TILE_MESSAGES = [
     "too far",
     "Looping aborted",
@@ -84,6 +85,13 @@ def log(message: str, level: str = "DEBUG") -> None:
 
     if _verbosity_level[level] >= LOG_VERBOSITY:
         AddToSystemJournal(f"[{level}] ({inspect.stack()[1].function}) {message}")
+
+    if level == "ERROR":
+        ERRORS =+ 1
+
+    if ERRORS > 10:
+        ERRORS = 0
+        Disconnect()
 
 
 def hungry() -> bool:
@@ -252,7 +260,7 @@ if __name__ == "__main__":
     SetARStatus(True)
     SetMoveOpenDoor(True)
     SetWarMode(False)
-    SetPauseScriptOnDisconnectStatus(False)
+    SetPauseScriptOnDisconnectStatus(True)
     config = get_character_config()
     while not Dead() and Connected():
         if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
