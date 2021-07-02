@@ -1,5 +1,5 @@
 from py_stealth.methods import *
-from datetime import datetime as dt
+from datetime import timedelta, datetime as dt
 import platform
 import inspect
 import requests
@@ -31,7 +31,8 @@ WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
 NEXT_TILE_MESSAGES = [
     "too far",
-    "Looping",
+    "Looping aborted",
+    "Looping finished",
     "You stop",
     "reach that",
     "mine that",
@@ -245,8 +246,9 @@ def send_discord_message(message: str):
     requests.post(config["discord"]["webhook_url"], json={"content": message})
 
 def chop(tile: int, x: int, y: int, z: int) -> None:
-    if newMoveXYZ(x, y, z, 1, 0, True):
+    if newMoveXY(x, y, True, 1, True):
         log(f"Reached point {x}, {y}","DEBUG")
+        Wait(1000)
         if equip_hatchet():
             hungry()
             if Weight() >= WEIGHT_TO_UNLOAD:
@@ -257,13 +259,19 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
                 else:
                     log("Failed to return to chopping point", "ERROR")
                     return
-            arms_lore()
+
             _started = dt.now()
+            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=5), _started):
+                cancel_targets()
+                arms_lore()
+
             cancel_targets()
             log(f"Started chopping at {x}, {y}", "DEBUG")
             UseObject(ObjAtLayer(RhandLayer()))
             if WaitForTarget(2000):
                 WaitTargetTile(tile, x, y, z)
+                Wait(1000)
+                log(_started)
                 WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 10 * 60 * 1000)
                 log(f"Finished chopping at {x}, {y}", "DEBUG")
             else:
@@ -284,7 +292,6 @@ if __name__ == "__main__":
     SetMoveOpenDoor(True)
     SetWarMode(False)
     SetPauseScriptOnDisconnectStatus(True)
-    config = get_character_config()
     while not Dead() and Connected():
         if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
             for _point in config["points"]:
@@ -295,6 +302,7 @@ if __name__ == "__main__":
                     for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
                         tile, x, y, z = tile_set
                         chop(tile, x, y, z)
+                        Wait(1000)
                 else:
                     log("Failed to get to point: {point_x}, {point_y}", "ERROR")
                     break

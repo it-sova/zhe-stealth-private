@@ -1,5 +1,5 @@
 from py_stealth.methods import *
-from datetime import datetime as dt
+from datetime import timedelta, datetime as dt
 import platform
 import requests
 import inspect
@@ -9,8 +9,6 @@ import re
 
 # Verbosity of log messages
 LOG_VERBOSITY = 1
-
-DISCORD_WEBHOOK = "https://discord.com/api/webhooks/858974853516230706/-KMww3sv9nxZLR8xZS8TSzzxaZt_FMREP-_z6zN09TFVMwOzzsJvmfrwz8KD2EkIpUPb"
 # Types
 PICKAXE = 0x0E85
 FOOD = 0x097B
@@ -39,6 +37,7 @@ GEMS = [
 NEXT_TILE_MESSAGES = [
     "too far",
     "Looping aborted",
+    "Looping finished",
     "You stop",
     "reach that",
     "mine that",
@@ -286,6 +285,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
     #if newMoveXY(x, y, True, 0, True):
     if move_x_y(x, y):
         log(f"Reached point {x}, {y}","DEBUG")
+        Wait(1000)
         if equip_pickaxe():
             hungry()
             if Weight() >= WEIGHT_LIMIT:
@@ -302,8 +302,12 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                         log("Reached mining point", "DEBUG")
                     else:
                         return
-            arms_lore()
+
             _started = dt.now()
+            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=5), _started):
+                cancel_targets()
+                arms_lore()
+
             cancel_targets()
             log(f"Started mining at {x}, {y}", "DEBUG")
             UseObject(ObjAtLayer(RhandLayer()))
@@ -332,3 +336,4 @@ if __name__ == "__main__":
         for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
             tile, x, y, z = tile_set
             mine(tile, x, y, z)
+            Wait(500)

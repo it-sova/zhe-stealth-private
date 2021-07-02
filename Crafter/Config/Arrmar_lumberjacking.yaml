@@ -1,17 +1,17 @@
 ---
 config:
   start_point:
-    x: 667
-    y: 873
+    x: 595
+    y: 913
 
   bank:
     x: 612
     y: 886
 
   points:
-    - [667, 873]
     - [595, 913]
     - [714, 939]
+    - [667, 873]
 
   discord:
     post_statistics: true
