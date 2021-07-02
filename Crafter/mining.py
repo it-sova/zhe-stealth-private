@@ -1,6 +1,6 @@
 from py_stealth.methods import *
 from datetime import datetime as dt
-import requests
+import platform
 import inspect
 import yaml
 import os
@@ -60,18 +60,25 @@ def get_character_config() -> object:
     _character_name = CharName().split()[0]
     _script_filename = os.path.basename(__file__).split(".")[0]
     _config_filename = f"{_character_name}_{_script_filename}.yaml"
-    log(f"Character config: {_config_filename}", "INFO")
 
-    if os.path.isfile(f"./Scripts/Crafter/Config/{_config_filename}"):
+    # FUKKEN SHINDOWS
+    if platform.system() == "Linux":
+        _config_path = f"./Scripts/Crafter/Config/{_config_filename}"
+    else:
+        _config_path = f"../Scripts/Crafter/Config/{_config_filename}"
+
+    log(f"Character config: {_config_path}", "INFO")
+
+    if os.path.isfile():
         log("Character config found", "DEBUG")
     else:
-        log(f"Character config not found, expected location: ./Scripts/Crafter/Config/{_config_filename}", "CRITICAL")
+        log(f"Character config not found, expected location: {_config_path}", "CRITICAL")
         disconnect()
 
-    with open(f"./Scripts/Crafter/Config/{_config_filename}", "r") as _config_file:
+    with open(f"./Scripts/Crafter/Config/{_config_path}", "r") as _config_file:
         try:
             _config = yaml.safe_load(_config_file)["config"]
-            log(f"Config file successfully loaded! {_config}", "DEBUG")
+            log(f"Config file successfully loaded! {_config_path}", "DEBUG")
             return _config
         except yaml.YAMLError as _exception:
             log(f"Exception during config parsing: {_exception}", "CRITICAL")
