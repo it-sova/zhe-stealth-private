@@ -195,7 +195,7 @@ def statistics(container: int) -> None:
         for _item_name, _item_qty in _sorted_container_content.items():
             _message += f"{_item_name} -> {_item_qty}\n"
 
-        if "discord" in config and "post_statictics" in config["discord"] and config["discord"]["post_statictics"]:
+        if "discord" in config and "post_statistics" in config["discord"] and config["discord"]["post_statistics"]:
             send_discord_message(_message)
         AddToSystemJournal(_message)
 
