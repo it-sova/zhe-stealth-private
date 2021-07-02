@@ -55,7 +55,7 @@ def disconnect() -> None:
     log("Disconnected", "CRITICAL")
     exit()
 
-def get_character_config() -> object:
+def get_character_config() -> None:
     # Get only 1st word in name
     _character_name = CharName().split()[0]
     _script_filename = os.path.basename(__file__).split(".")[0]
@@ -69,7 +69,7 @@ def get_character_config() -> object:
 
     log(f"Character config: {_config_path}", "INFO")
 
-    if os.path.isfile():
+    if os.path.isfile(_config_path):
         log("Character config found", "DEBUG")
     else:
         log(f"Character config not found, expected location: {_config_path}", "CRITICAL")
