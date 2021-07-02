@@ -102,16 +102,14 @@ def log(message: str, level: str = "DEBUG") -> None:
 
 def hungry() -> bool:
     if Luck() < 50:
-        UOSay(".hungry")
-        Wait(1000)
-        # if Count(FOOD) > 2:
-        #     UseType(FOOD, 0x0000)
-        #     Wait(1000)
-        #     log(f"Food left in backpack: {Count(FOOD)}", "INFO")
-        #     return True
-        # else:
-        #     log("No more food left in backpack!", "ERROR")
-        #     return False
+        if Count(FOOD) > 2:
+            UseType(FOOD, 0x0000)
+            Wait(1000)
+            log(f"Food left in backpack: {Count(FOOD)}", "INFO")
+            return True
+        else:
+            log("No more food left in backpack!", "ERROR")
+            return False
 
 # Script specific functions
 def find_tiles(center_x: int, center_y: int, radius: int) -> set[int, int, int, int]:
@@ -172,6 +170,12 @@ def unload_to_bank() -> None:
             for _item in GetFoundList():
                 MoveItem(_item, -1, _bank, 0, 0, 0)
                 Wait(2000)
+
+        if not FindType(FOOD, Backpack()) or FindQuantity() < 10:
+            log("Not enought food in pack, let's get some", "DEBUG")
+            if not grab_from_container(FOOD, 0x0000, 10, ObjAtLayer(BankLayer())):
+                log("No food left in bank", "CRITICAL")
+
         craft_tools()
         statistics(_bank)
     else:
