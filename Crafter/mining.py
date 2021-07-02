@@ -51,7 +51,7 @@ TILE_SEARCH_RANGE = 10
 def disconnect() -> None:
     SetARStatus(False)
     SetPauseScriptOnDisconnectStatus(False)
-    #Disconnect()
+    Disconnect()
     log("Disconnected", "CRITICAL")
     exit()
 
@@ -75,7 +75,7 @@ def get_character_config() -> object:
         log(f"Character config not found, expected location: {_config_path}", "CRITICAL")
         disconnect()
 
-    with open(f"./Scripts/Crafter/Config/{_config_path}", "r") as _config_file:
+    with open(_config_path, "r") as _config_file:
         try:
             _config = yaml.safe_load(_config_file)["config"]
             log(f"Config file successfully loaded! {_config_path}", "DEBUG")
