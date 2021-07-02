@@ -12,3 +12,7 @@ config:
     - [667, 873]
     - [595, 913]
     - [714, 939]
+
+  discord:
+    post_statictics: true
+    webhook_url: https://discord.com/api/webhooks/860503436158959676/2qflDmu2HJ4BzFDd_wWztN4XripnSBMPcI_pqKNyq1PApPhUYb_9y09CURCpd1TFHT96

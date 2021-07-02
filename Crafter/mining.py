@@ -1,6 +1,7 @@
 from py_stealth.methods import *
 from datetime import datetime as dt
 import platform
+import requests
 import inspect
 import yaml
 import os
@@ -55,7 +56,7 @@ def disconnect() -> None:
     log("Disconnected", "CRITICAL")
     exit()
 
-def get_character_config() -> None:
+def get_character_config() -> object:
     # Get only 1st word in name
     _character_name = CharName().split()[0]
     _script_filename = os.path.basename(__file__).split(".")[0]
@@ -193,15 +194,27 @@ def unload_to_bank() -> None:
         log("Failed to reach bank", "ERROR")
 
 def statistics(container: int) -> None:
-    AddToSystemJournal("==================")
+    _container_content = {}
+    _message = f"{CharName()}: \n"
+
     if FindTypesArrayEx(GEMS + [INGOTS], [0xFFFF], [container], False):
         for _item in GetFoundList():
             _item_tooltip = GetTooltip(_item)
             _match = re.search('^\d+\s([\w\s]+)', _item_tooltip)
             if _match:
                 _item_name = _match.group(1).capitalize()
-                AddToSystemJournal(f"{_item_name}: {GetQuantity(_item)}")
-    AddToSystemJournal("==================")
+                if not _item_name in _container_content:
+                    _container_content[_item_name] = GetQuantity(_item)
+                else:
+                    _container_content[_item_name] += GetQuantity(_item)
+        _sorted_container_content = dict(sorted(_container_content.items(), key=lambda x: x[1], reverse=True))
+
+        for _item_name, _item_qty in _sorted_container_content.items():
+            _message += f"{_item_name} -> {_item_qty}\n"
+
+        if "discord" in config and "post_statictics" in config["discord"] and config["discord"]["post_statictics"]:
+            send_discord_message(_message)
+        AddToSystemJournal(_message)
 
 
 def grab_from_container(type: int, color: int, qty: int, container: int) -> bool:
@@ -233,7 +246,9 @@ def craft_item(category: str, item: str) -> None:
 def craft_tools() -> None:
     if Count(TINKER_TOOLS) < 2 or Count(PICKAXE) < KEEP_TOOLS:
         log("Not enought tools in pack, let's craft some", "DEBUG")
-        grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer()))
+        if not grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer())):
+            log("No ingots left in bank", "CRITICAL")
+            disconnect()
         while Count(TINKER_TOOLS) < 2:
             craft_item("Tools", "Tinker")
             Wait(1000)
@@ -264,6 +279,8 @@ def move_x_y(x: int, y:int) -> bool:
             return False
     return True
 
+def send_discord_message(message: str):
+    requests.post(config["discord"]["webhook_url"], json={"content": message})
 
 def mine(tile: int, x: int, y: int, z: int) -> None:
     #if newMoveXY(x, y, True, 0, True):
@@ -304,11 +321,11 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
 if __name__ == "__main__":
     errors = 0
     ClearSystemJournal()
+    config = get_character_config()
     UOSay(".autoloop 100")
     SetARStatus(True)
     SetPauseScriptOnDisconnectStatus(True)
     SetWarMode(False)
-    config = get_character_config()
     while not Dead() and Connected():
         check_stamina()
         move_x_y(config["start_point"]["x"], config["start_point"]["y"])

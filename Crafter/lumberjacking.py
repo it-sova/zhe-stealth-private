@@ -2,14 +2,13 @@ from py_stealth.methods import *
 from datetime import datetime as dt
 import platform
 import inspect
+import requests
 import yaml
 import os
 import re
 
 # Verbosity of log messages
 LOG_VERBOSITY = 1
-
-DISCORD_WEBHOOK = "https://discord.com/api/webhooks/858974853516230706/-KMww3sv9nxZLR8xZS8TSzzxaZt_FMREP-_z6zN09TFVMwOzzsJvmfrwz8KD2EkIpUPb"
 # Types
 HATCHET =0x0F43
 FOOD = 0x097B
@@ -32,7 +31,7 @@ WEIGHT_TO_UNLOAD = MaxWeight() - 60
 KEEP_TOOLS = 3
 NEXT_TILE_MESSAGES = [
     "too far",
-    "Looping aborted",
+    "Looping",
     "You stop",
     "reach that",
     "mine that",
@@ -50,7 +49,7 @@ def disconnect() -> None:
     log("Disconnected", "CRITICAL")
     exit()
 
-def get_character_config() -> None:
+def get_character_config() -> object:
     # Get only 1st word in name
     _character_name = CharName().split()[0]
     _script_filename = os.path.basename(__file__).split(".")[0]
@@ -178,15 +177,27 @@ def unload_to_bank() -> None:
         log("Failed to reach bank", "ERROR")
 
 def statistics(container: int) -> None:
-    AddToSystemJournal("==================")
+    _container_content = {}
+    _message = f"{CharName()}: \n"
+
     if FindTypesArrayEx([LOGS], [0xFFFF], [container], False):
         for _item in GetFoundList():
             _item_tooltip = GetTooltip(_item)
             _match = re.search('^\d+\s([\w\s]+)', _item_tooltip)
             if _match:
                 _item_name = _match.group(1).capitalize()
-                AddToSystemJournal(f"{_item_name}: {GetQuantity(_item)}")
-    AddToSystemJournal("==================")
+                if not _item_name in _container_content:
+                    _container_content[_item_name] = GetQuantity(_item)
+                else:
+                    _container_content[_item_name] += GetQuantity(_item)
+        _sorted_container_content = dict(sorted(_container_content.items(), key=lambda x: x[1], reverse=True))
+
+        for _item_name, _item_qty in _sorted_container_content.items():
+            _message += f"{_item_name} -> {_item_qty}\n"
+
+        if "discord" in config and "post_statictics" in config["discord"] and config["discord"]["post_statictics"]:
+            send_discord_message(_message)
+        AddToSystemJournal(_message)
 
 
 def grab_from_container(type: int, color: int, qty: int, container: int) -> bool:
@@ -220,7 +231,9 @@ def craft_tools() -> None:
         log("Not enought tools in pack, let's craft some", "DEBUG")
         if not FindTypeEx(INGOTS, COPPER_COLOR, Backpack()) or FindQuantity() < 30:
             log("Not enought ingots in pack, let's get some", "DEBUG")
-            grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer()))
+            if not grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer())):
+                log("No ingots left in bank", "CRITICAL")
+                disconnect()
         while Count(TINKER_TOOLS) < 2:
             craft_item("Tools", "Tinker")
             Wait(1000)
@@ -228,6 +241,8 @@ def craft_tools() -> None:
             craft_item("Deadly", "Hatchet")
             Wait(1000)
 
+def send_discord_message(message: str):
+    requests.post(config["discord"]["webhook_url"], json={"content": message})
 
 def chop(tile: int, x: int, y: int, z: int) -> None:
     if newMoveXYZ(x, y, z, 1, 0, True):
@@ -263,6 +278,7 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
 if __name__ == "__main__":
     errors = 0
     ClearSystemJournal()
+    config = get_character_config()
     UOSay(".autoloop 100")
     SetARStatus(True)
     SetMoveOpenDoor(True)
