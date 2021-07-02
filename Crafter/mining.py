@@ -257,8 +257,8 @@ def craft_tools() -> None:
 
 def check_stamina() -> None:
     if Stam() < MaxStam():
-        log(f"Stamina is low, waiting for full regeneration", "DEBUG")
         while Stam() < (MaxStam() - 10):
+            log(f"Stamina is low, waiting for full regeneration", "DEBUG")
             Wait(1000)
 
 def move_x_y(x: int, y:int) -> bool:
