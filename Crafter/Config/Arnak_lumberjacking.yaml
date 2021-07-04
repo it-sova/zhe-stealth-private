@@ -1,0 +1,18 @@
+---
+config:
+  start_point:
+    x: 595
+    y: 913
+
+  bank:
+    x: 612
+    y: 886
+
+  points:
+    - [594, 1031]
+    - [598, 957]
+    - [489, 942]
+
+  discord:
+    post_statistics: true
+    webhook_url: https://discord.com/api/webhooks/860503436158959676/2qflDmu2HJ4BzFDd_wWztN4XripnSBMPcI_pqKNyq1PApPhUYb_9y09CURCpd1TFHT96

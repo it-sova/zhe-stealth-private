@@ -40,7 +40,7 @@ NEXT_TILE_MESSAGES = [
 ]
 
 # Script configuration
-TILE_SEARCH_RANGE = 15
+TILE_SEARCH_RANGE = 20
 
 # Helper functions
 def disconnect() -> None:
@@ -101,7 +101,7 @@ def log(message: str, level: str = "DEBUG") -> None:
 
 
 def hungry() -> bool:
-    if Luck() < 50:
+    if Luck() < 90:
         if Count(FOOD) > 2:
             UseType(FOOD, 0x0000)
             Wait(1000)
@@ -254,6 +254,7 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
         log(f"Reached point {x}, {y}","DEBUG")
         Wait(1000)
         if equip_hatchet():
+            Wait(1000)
             hungry()
             if Weight() >= WEIGHT_TO_UNLOAD:
                 log("Weight limit reached, heading to bank", "DEBUG")
@@ -275,7 +276,6 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
             if WaitForTarget(2000):
                 WaitTargetTile(tile, x, y, z)
                 Wait(1000)
-                log(_started)
                 WaitJournalLine(_started, "|".join(NEXT_TILE_MESSAGES), 10 * 60 * 1000)
                 log(f"Finished chopping at {x}, {y}", "DEBUG")
             else:

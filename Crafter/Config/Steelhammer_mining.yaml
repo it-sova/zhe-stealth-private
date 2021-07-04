@@ -1,0 +1,17 @@
+---
+config:
+  start_point:
+    x: 2595
+    y: 450
+
+  forge:
+    x: 2559
+    y: 478
+
+  bank:
+    x: 2514
+    y: 554
+
+  discord:
+    post_statistics: true
+    webhook_url: https://discord.com/api/webhooks/860503436158959676/2qflDmu2HJ4BzFDd_wWztN4XripnSBMPcI_pqKNyq1PApPhUYb_9y09CURCpd1TFHT96
