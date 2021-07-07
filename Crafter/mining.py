@@ -308,7 +308,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                         return
 
             _started = dt.now()
-            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=1), _started):
+            if InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=1), _started) < 1:
                 cancel_targets()
                 arms_lore()
 
