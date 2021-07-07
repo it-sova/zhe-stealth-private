@@ -188,7 +188,7 @@ def unload_to_bank() -> None:
 
         if not FindType(FOOD, Backpack()) or FindQuantity() < 10:
             log("Not enought food in pack, let's get some", "DEBUG")
-            if not grab_from_container(FOOD, 0x0000, 10, ObjAtLayer(BankLayer())):
+            if not grab_from_container(FOOD, 0x0000, 10, _bank):
                 log("No food left in bank", "CRITICAL")
 
         craft_tools()
@@ -221,12 +221,12 @@ def statistics(container: int) -> None:
 
 
 def grab_from_container(type: int, color: int, qty: int, container: int) -> bool:
-    if FindTypeEx(INGOTS, COPPER_COLOR, container):
-        Grab(FindItem(), 100)
+    if FindTypeEx(type, color, container) and FindQuantity() >= qty:
+        Grab(FindItem(), qty)
         Wait(1000)
-        log("Got ingots from bank", "DEBUG")
+        log("Got item from bank", "DEBUG")
         return True
-    log("Failed to get ingots from bank", "ERROR")
+    log("Failed to get item from bank", "ERROR")
     return False
 
 
@@ -308,7 +308,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                         return
 
             _started = dt.now()
-            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=5), _started):
+            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=1), _started):
                 cancel_targets()
                 arms_lore()
 

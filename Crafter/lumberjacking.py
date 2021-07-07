@@ -209,9 +209,9 @@ def grab_from_container(type: int, color: int, qty: int, container: int) -> bool
     if FindTypeEx(type, color, container) and FindQuantity() >= qty:
         Grab(FindItem(), qty)
         Wait(1000)
-        log("Got ingots from bank", "DEBUG")
+        log("Got item from bank", "DEBUG")
         return True
-    log("Failed to get ingots from bank", "ERROR")
+    log("Failed to get item from bank", "ERROR")
     return False
 
 
@@ -266,7 +266,7 @@ def chop(tile: int, x: int, y: int, z: int) -> None:
                     return
 
             _started = dt.now()
-            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=5), _started):
+            if not InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=1), _started):
                 cancel_targets()
                 arms_lore()
 
