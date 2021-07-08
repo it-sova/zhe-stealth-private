@@ -8,7 +8,7 @@ import os
 import re
 
 # Verbosity of log messages
-LOG_VERBOSITY = 1
+LOG_VERBOSITY = 3
 # Types
 HATCHET =0x0F43
 FOOD = 0x097B
@@ -94,6 +94,7 @@ def log(message: str, level: str = "DEBUG") -> None:
 
     if level == "ERROR":
         errors =+ 1
+        AddToSystemJournal(f"Error count: {errors}")
 
     if errors > 10:
         errors = 0

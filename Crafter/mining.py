@@ -8,7 +8,7 @@ import os
 import re
 
 # Verbosity of log messages
-LOG_VERBOSITY = 1
+LOG_VERBOSITY = 3
 # Types
 PICKAXE = 0x0E85
 FOOD = 0x097B
@@ -100,6 +100,7 @@ def log(message: str, level: str = "DEBUG") -> None:
 
     if level == "ERROR":
         errors =+ 1
+        AddToSystemJournal(f"Error count: {errors}")
 
     if errors > 10:
         errors = 0
@@ -261,8 +262,8 @@ def craft_tools() -> None:
 
 def check_stamina() -> None:
     if Stam() < MaxStam():
+        log(f"Stamina is low, waiting for full regeneration", "DEBUG")
         while Stam() < (MaxStam() - 10):
-            log(f"Stamina is low, waiting for full regeneration", "DEBUG")
             Wait(1000)
 
 def move_x_y(x: int, y:int) -> bool:
@@ -308,6 +309,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                         return
 
             _started = dt.now()
+            # Flood protection
             if InJournalBetweenTimes("must wait|doing something", dt.now() - timedelta(minutes=1), _started) < 1:
                 cancel_targets()
                 arms_lore()
