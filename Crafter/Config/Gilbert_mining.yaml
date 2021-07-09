@@ -1,16 +1,19 @@
 ---
 config:
   start_point:
-    x: 2595
-    y: 450
+    x: 2575
+    y: 475
+    z: 0
 
   forge:
-    x: 2600
-    y: 448
+    x: 2559
+    y: 478
+    z: 10
 
   bank:
     x: 2514
     y: 554
+    z: 0
 
   discord:
     post_statistics: true

@@ -3,14 +3,17 @@ config:
   start_point:
     x: 2569
     y: 443
+    z: 0
 
   forge:
     x: 2559
     y: 478
+    z: 10
 
   bank:
     x: 2514
     y: 554
+    z: 0
 
   discord:
     post_statistics: true
