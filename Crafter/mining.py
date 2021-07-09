@@ -329,7 +329,6 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             unload_to_bank()
 
 if __name__ == "__main__":
-    global errors
     errors = 0
     ClearSystemJournal()
     config = get_character_config()
