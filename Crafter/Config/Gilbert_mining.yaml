@@ -5,8 +5,8 @@ config:
     y: 450
 
   forge:
-    x: 2559
-    y: 478
+    x: 2600
+    y: 448
 
   bank:
     x: 2514

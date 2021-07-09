@@ -1,8 +1,8 @@
 ---
 config:
   start_point:
-    x: 2577
-    y: 473
+    x: 2569
+    y: 443
 
   forge:
     x: 2559

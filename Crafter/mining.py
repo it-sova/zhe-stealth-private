@@ -41,6 +41,7 @@ NEXT_TILE_MESSAGES = [
     "You stop",
     "reach that",
     "mine that",
+    "You can't see",
     "does not seem to exist"
 ]
 
@@ -87,7 +88,6 @@ def get_character_config() -> object:
 
 
 def log(message: str, level: str = "DEBUG") -> None:
-    global errors;
     _verbosity_level = {
         "DEBUG":    1,
         "INFO":     2,
@@ -329,6 +329,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             unload_to_bank()
 
 if __name__ == "__main__":
+    global errors
     errors = 0
     ClearSystemJournal()
     config = get_character_config()
