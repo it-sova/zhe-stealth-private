@@ -39,6 +39,7 @@ NEXT_TILE_MESSAGES = [
     "Looping aborted",
     "Looping finished",
     "You stop",
+    "no ore left",
     "reach that",
     "mine that",
     "You can't see",
@@ -47,6 +48,18 @@ NEXT_TILE_MESSAGES = [
 
 # Script configuration
 TILE_SEARCH_RANGE = 10
+
+class ErrorCounter(object):
+
+    _errors = 0
+
+    def get_errors_count(self):
+        return type(self)._errors
+
+    def set_errors_count(self,count):
+        type(self)._errors = count
+
+    errors = property(get_errors_count, set_errors_count)
 
 # Helper functions
 def disconnect() -> None:
@@ -88,8 +101,7 @@ def get_character_config() -> object:
 
 
 def log(message: str, level: str = "DEBUG") -> None:
-    errors = 0
-    # TODO: Fix this stupid piece of shit
+    _counter = ErrorCounter()
     _verbosity_level = {
         "DEBUG":    1,
         "INFO":     2,
@@ -101,11 +113,11 @@ def log(message: str, level: str = "DEBUG") -> None:
         AddToSystemJournal(f"[{level}] ({inspect.stack()[1].function}) {message}")
 
     if level == "ERROR":
-        errors =+ 1
-        AddToSystemJournal(f"Error count: {errors}")
+        _counter.errors =+ 1
+        AddToSystemJournal(f"Error count: {_counter.errors}")
 
-    if errors > 10:
-        errors = 0
+    if _counter.errors > 10:
+        _counter.errors = 0
         Disconnect()
 
 
@@ -331,7 +343,6 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             unload_to_bank()
 
 if __name__ == "__main__":
-    errors = 0
     ClearSystemJournal()
     config = get_character_config()
     UOSay(".autoloop 100")
