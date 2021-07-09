@@ -88,6 +88,8 @@ def get_character_config() -> object:
 
 
 def log(message: str, level: str = "DEBUG") -> None:
+    errors = 0
+    # TODO: Fix this stupid piece of shit
     _verbosity_level = {
         "DEBUG":    1,
         "INFO":     2,
