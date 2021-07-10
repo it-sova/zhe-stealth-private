@@ -170,7 +170,7 @@ def arms_lore() -> None:
 
 def smelt() -> None:
     log("Weight limit reached, going to smelt ore", "DEBUG")
-    if move_x_y_z(config["forge"]["x"], config["forge"]["y"], config["forge"]["z"]):
+    if newMoveXY(config["forge"]["x"], config["forge"]["y"], True, 0, True):
         log("Reached forge", "DEBUG")
         if FindType(ORE, Backpack()):
             for _ore in GetFoundList():
@@ -285,10 +285,10 @@ def check_stamina() -> None:
             Wait(1000)
 
 def move_x_y_z(x: int, y: int, z: int) -> bool:
-    _try = 0
     check_stamina()
     log(f"Heading to point {x}, {y}, {z}", "DEBUG")
-    while not newMoveXYZ(x, y, z, 0, 0, True):
+    _try = 0
+    while not newMoveXYZ(x, y, z, 0, 0, True) and _try < 10:
         check_stamina()
         if newMoveXYZ(x, y, z, 0, 0, True):
             log(f"Reached point {x}, {y}, {z}", "DEBUG")
@@ -296,9 +296,6 @@ def move_x_y_z(x: int, y: int, z: int) -> bool:
         else:
             log(f"Failed to reach point {x}, {y}, {z}", "DEBUG")
             _try += 1
-            if _try >= 9:
-                log(f"Failed to reach point {x}, {y}, {z} after 10 attempts", "ERROR")
-            return False
     return True
 
 def send_discord_message(message: str):
