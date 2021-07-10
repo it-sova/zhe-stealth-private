@@ -331,11 +331,11 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                 _started = dt.now()
                 WaitTargetTile(tile, x, y, z)
                 _minutes_waiting = 0
-                while _minutes_waiting < 10:
+                while _minutes_waiting < 5:
                     Wait(60 * 1000)
                     _minutes_waiting += 1
                     log(f"Waiting for {_minutes_waiting} minutes", "DEBUG")
-                    if InJournalBetweenTimes("|".join(NEXT_TILE_MESSAGES), _started, _started + timedelta(minutes=1)) > 1:
+                    if InJournalBetweenTimes("|".join(NEXT_TILE_MESSAGES), _started, _started + timedelta(minutes=3)) > 1:
                         log("Stop-line found, breaking that shit", "DEBUG")
                         break
 
