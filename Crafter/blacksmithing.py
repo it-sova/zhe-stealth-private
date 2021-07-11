@@ -19,10 +19,10 @@ def get_target_item_and_category() -> list[str, str, str, int]:
         return ["Weapons", "Swords", "Stiletto", 0x2384]
     elif skill_value < 50:
         return ["Weapons", "Swords", "Kryss", 0x1401]
-    # elif skill_value < 75:
-    #     return ["Weapons", "Swords", "Katana", 0x1401]
+    elif skill_value < 75:
+        return ["Weapons", "Swords", "Katana", 0x13FE]
     else:
-        return ["Weapons", "Swords", "Kryss", 0x1401]
+        return ["Weapons", "Swords", "Katana", 0x13FE]
 
 def cancel_targets() -> None:
     if TargetPresent():

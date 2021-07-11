@@ -170,7 +170,7 @@ def arms_lore() -> None:
 
 def smelt() -> None:
     log("Weight limit reached, going to smelt ore", "DEBUG")
-    if newMoveXY(config["forge"]["x"], config["forge"]["y"], True, 0, True):
+    if move_x_y(config["forge"]["x"], config["forge"]["y"]):
         log("Reached forge", "DEBUG")
         if FindType(ORE, Backpack()):
             for _ore in GetFoundList():
@@ -182,7 +182,7 @@ def smelt() -> None:
 
 def unload_to_bank() -> None:
     log("Weight limit reached, heading to bank", "DEBUG")
-    if move_x_y_z(config["bank"]["x"], config["bank"]["y"], config["bank"]["z"]):
+    if move_x_y(config["bank"]["x"], config["bank"]["y"]):
         log("Reached bank", "DEBUG")
         log(f"Before backpack usage, LastContainer == {LastContainer()}", "DEBUG")
         while LastContainer() != Backpack():
@@ -284,17 +284,17 @@ def check_stamina() -> None:
         while Stam() < (MaxStam() - 10):
             Wait(1000)
 
-def move_x_y_z(x: int, y: int, z: int) -> bool:
+def move_x_y(x: int, y: int) -> bool:
     check_stamina()
-    log(f"Heading to point {x}, {y}, {z}", "DEBUG")
+    log(f"Heading to point {x}, {y}", "DEBUG")
     _try = 0
-    while not newMoveXYZ(x, y, z, 0, 0, True) and _try < 10:
+    while not newMoveXY(x, y, True, 0, True) and _try < 10:
         check_stamina()
-        if newMoveXYZ(x, y, z, 0, 0, True):
-            log(f"Reached point {x}, {y}, {z}", "DEBUG")
+        if newMoveXY(x, y, True, 0, True):
+            log(f"Reached point {x}, {y}", "DEBUG")
             return True
         else:
-            log(f"Failed to reach point {x}, {y}, {z}", "DEBUG")
+            log(f"Failed to reach point {x}, {y}", "DEBUG")
             _try += 1
     return True
 
@@ -302,8 +302,8 @@ def send_discord_message(message: str):
     requests.post(config["discord"]["webhook_url"], json={"content": message})
 
 def mine(tile: int, x: int, y: int, z: int) -> None:
-    if move_x_y_z(x, y, z):
-        log(f"Reached point {x}, {y}, {z}","DEBUG")
+    if move_x_y(x, y):
+        log(f"Reached point {x}, {y}","DEBUG")
         Wait(1000)
         if equip_pickaxe():
             hungry()
@@ -312,8 +312,8 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
                 if Weight() >= WEIGHT_TO_UNLOAD:
                     unload_to_bank()
                     # Should use it because of 2nd floor above mine
-                    move_x_y_z(config["start_point"]["x"], config["start_point"]["y"], config["start_point"]["z"])
-                if move_x_y_z(x, y, z):
+                    move_x_y(config["start_point"]["x"], config["start_point"]["y"])
+                if move_x_y(x, y):
                     log("Reached mining point", "DEBUG")
                 else:
                     return
@@ -348,6 +348,7 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             unload_to_bank()
 
 if __name__ == "__main__":
+
     ClearSystemJournal()
     config = get_character_config()
     UOSay(".autoloop 100")
@@ -355,7 +356,7 @@ if __name__ == "__main__":
     SetPauseScriptOnDisconnectStatus(True)
     SetWarMode(False)
     while not Dead() and Connected():
-        move_x_y_z(config["start_point"]["x"], config["start_point"]["y"], config["start_point"]["z"])
+        move_x_y(config["start_point"]["x"], config["start_point"]["y"])
         for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
             tile, x, y, z = tile_set
             mine(tile, x, y, z)
