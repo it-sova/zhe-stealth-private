@@ -12,7 +12,6 @@ config:
     - [519, 873]
     - [488, 896]
     - [449, 879]
-    - [400, 923]
 
   discord:
     post_statistics: true
