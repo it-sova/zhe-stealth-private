@@ -8,7 +8,7 @@ import os
 import re
 
 # Verbosity of log messages
-LOG_VERBOSITY = 3
+LOG_VERBOSITY = 1
 # Types
 HATCHET =0x0F43
 FOOD = 0x097B
@@ -250,10 +250,21 @@ def craft_tools() -> None:
 def send_discord_message(message: str):
     requests.post(config["discord"]["webhook_url"], json={"content": message})
 
+def check_dead():
+    if Dead():
+        send_discord_message(f"I'm dead at X: {GetX(Self())} Y: {GetY(Self())}")
+        line = InJournalBetweenTimes("attacking", dt.now(), dt.now() - timedelta(minutes=5))
+        if line > 0:
+            send_discord_message(Journal(line))
+    while Dead():
+        SetWarMode(True)
+        Wait(1000)
+
 def chop(tile: int, x: int, y: int, z: int) -> None:
     if newMoveXY(x, y, True, 1, True):
         log(f"Reached point {x}, {y}","DEBUG")
         Wait(1000)
+        check_dead()
         if equip_hatchet():
             Wait(1000)
             hungry()
