@@ -18,7 +18,7 @@ INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
 WEIGHT_LIMIT = MaxWeight() - 60
-WEIGHT_TO_UNLOAD = MaxWeight() - 60
+WEIGHT_TO_UNLOAD = MaxWeight() - 100
 KEEP_TOOLS = 3
 GEMS = [
     0x0F10, # Emeralds
@@ -178,6 +178,10 @@ def smelt() -> None:
                 UseObject(_ore)
                 WaitJournalLine(_started, "You put", 10 * 1000)
                 Wait(1000)
+            if FindType(INGOTS, Ground()):
+                for dropped_ingot in GetFoundList():
+                    Grab(dropped_ingot)
+                    Wait(2000)
             log("Smelting finished", "DEBUG")
 
 def unload_to_bank() -> None:
