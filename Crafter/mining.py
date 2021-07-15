@@ -180,7 +180,7 @@ def smelt() -> None:
                 Wait(1000)
             if FindType(INGOTS, Ground()):
                 for dropped_ingot in GetFoundList():
-                    Grab(dropped_ingot)
+                    Grab(dropped_ingot, -1)
                     Wait(2000)
             log("Smelting finished", "DEBUG")
 
