@@ -308,20 +308,26 @@ if __name__ == "__main__":
     SetMoveOpenDoor(True)
     SetWarMode(False)
     SetPauseScriptOnDisconnectStatus(True)
-    while not Dead() and Connected():
-        if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
-            for _point in config["points"]:
-                point_x, point_y = _point
-                log(f"Point: {point_x}, {point_y}", "DEBUG")
-                if newMoveXY(point_x, point_y, True, 0, True):
-                    log(f"Reached point: {point_x}, {point_y}", "DEBUG")
-                    for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
-                        tile, x, y, z = tile_set
-                        chop(tile, x, y, z)
-                        Wait(1000)
-                else:
-                    log("Failed to get to point: {point_x}, {point_y}", "ERROR")
-                    break
-        else:
-            log("Failed to get to starting point! Overload?", "ERROR")
-            Wait(2 * 60 * 1000)
+    while True:
+        while not Dead() and Connected():
+            if newMoveXY(config["start_point"]["x"], config["start_point"]["y"], True, 0, True):
+                for _point in config["points"]:
+                    point_x, point_y = _point
+                    log(f"Point: {point_x}, {point_y}", "DEBUG")
+                    if newMoveXY(point_x, point_y, True, 0, True):
+                        log(f"Reached point: {point_x}, {point_y}", "DEBUG")
+                        for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):
+                            tile, x, y, z = tile_set
+                            chop(tile, x, y, z)
+                            Wait(1000)
+                    else:
+                        log("Failed to get to point: {point_x}, {point_y}", "ERROR")
+                        break
+            else:
+                log("Failed to get to starting point! Overload?", "ERROR")
+                Wait(2 * 60 * 1000)
+        while Dead() and Connected():
+            SetWarMode(True)
+            Wait(1000)
+
+        Wait(1000)
