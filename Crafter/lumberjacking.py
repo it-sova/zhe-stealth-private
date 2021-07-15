@@ -235,11 +235,17 @@ def craft_item(category: str, item: str) -> None:
 def craft_tools() -> None:
     if Count(TINKER_TOOLS) < 2 or Count(HATCHET) < KEEP_TOOLS:
         log("Not enought tools in pack, let's craft some", "DEBUG")
+        if not FindType(TINKER_TOOLS):
+            if not grab_from_container(TINKER_TOOLS, 0xFFFF, 1, ObjAtLayer(BankLayer())):
+                log("No tinker tools left in bank", "CRITICAL")
+                disconnect()
+
         if not FindTypeEx(INGOTS, COPPER_COLOR, Backpack()) or FindQuantity() < 30:
             log("Not enought ingots in pack, let's get some", "DEBUG")
             if not grab_from_container(INGOTS, COPPER_COLOR, 50, ObjAtLayer(BankLayer())):
                 log("No ingots left in bank", "CRITICAL")
                 disconnect()
+
         while Count(TINKER_TOOLS) < 2:
             craft_item("Tools", "Tinker")
             Wait(1000)
