@@ -1,0 +1,16 @@
+---
+config:
+  start_point:
+    x: 1850
+    y: 1115
+
+  safe_point:
+    x: 1851
+    y: 1115
+
+  combat:
+    target: 0x0027CE3E
+    healing_threshold: 80
+    shield: 0x1B74
+    weapon: 0x5064
+    two_handed: true

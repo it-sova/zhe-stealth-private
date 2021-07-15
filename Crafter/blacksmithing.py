@@ -13,16 +13,20 @@ FOOD = 0x097B
 
 def get_target_item_and_category() -> list[str, str, str, int]:
     skill_value = GetSkillValue("Blacksmithy")
-    if skill_value < 43:
+    if skill_value <= 43:
         return ["Weapons", "Swords", "Cutlass", 0x1440]
-    elif skill_value < 50:
+    elif skill_value <= 50:
         return ["Weapons", "Swords", "Stiletto", 0x2384]
-    elif skill_value < 50:
+    elif skill_value <= 60:
         return ["Weapons", "Swords", "Kryss", 0x1401]
-    elif skill_value < 75:
+    elif skill_value <= 75:
         return ["Weapons", "Swords", "Katana", 0x13FE]
+    elif skill_value <= 80:
+        return ["Weapons", "Swords", "Awl", 0x238A]
+    elif skill_value <= 95:
+        return ["Armor", "Platemail", "Platemail Gorget", 0x1413]
     else:
-        return ["Weapons", "Swords", "Katana", 0x13FE]
+        return ["Weapons", "Polearms", "Spear", 0x0F63]
 
 def cancel_targets() -> None:
     if TargetPresent():
@@ -52,7 +56,25 @@ def hungry() -> bool:
             return False
     return True
 
+def open_container():
+    if IsObjectExists(TOOL_CHEST):
+        while LastContainer() != Backpack():
+            UseObject(Backpack())
+            Wait(1000)
+
+        _try = 0
+        while LastContainer() != TOOL_CHEST:
+            UseObject(TOOL_CHEST)
+            Wait(100)
+            _try += 1
+            if _try >= 10:
+                log("Failed to open tool checst 10 times a row", "CRITICAL")
+                full_disconnect()
+    else:
+        log("Tool chest not found!", "CRITICAL")
+
 def get_item_from_container(type: int, color: int, container: int, name: str = "") -> bool:
+    open_container()
     if FindTypeEx(type, color, container, False):
         Grab(FindItem(), 1)
         Wait(500)
@@ -74,7 +96,8 @@ def equip_tool() -> bool:
     return tool_equipped()
 
 def enough_resources():
-    FindTypeEx(INGOTS, COLOR, Ground(), False)
+    if FindTypeEx(INGOTS, COLOR, Ground(), False):
+        log(f"There is {FindFullQuantity()} ingots left", "INFO")
     return True if FindFullQuantity() > 100 else False
 
 def get_and_equip_tool() -> bool:
@@ -94,7 +117,7 @@ def craft_item(item_details: list[str]):
         UseObject(ObjAtLayer(RhandLayer()))
         Wait(500)
         for category in item_details[:3]:
-            log(f"Selecting {category}")
+            # log(f"Selecting {category}")
             WaitMenu("What", category)
         WaitJournalLine(_started, "finished|aborted", 600000)
     Wait(500)
@@ -108,11 +131,18 @@ def smelt(item_details: list[str]):
         UseType(TONGS_TYPE, -1)
         WaitJournalLine(_started, "finished|aborted", 600000)
     if FindTypeEx(INGOTS, COLOR, Backpack(), False):
+        Wait(2000)
         ingots = FindItem()
         if FindTypeEx(INGOTS, COLOR, Ground(), False):
+            log("Stacking ingots...","DEBUG")
+            log(f"Ingots on floor before stacking: {FindFullQuantity()}", "DEBUG")
             MoveItem(ingots, -1, FindItem(), 0, 0, 0)
+            Wait(200)
+            if FindTypeEx(INGOTS, COLOR, Ground(), False):
+                log(f"Ingots on floor after stacking: {FindFullQuantity()}", "DEBUG")
         else:
             DropHere(ingots)
+            log("No ingots on floor left, dropping","DEBUG")
 
 def full_disconnect():
     SetARStatus(False)
@@ -126,12 +156,14 @@ def init() -> None:
     if IsObjectExists(ObjAtLayer(RhandLayer())):
         UnEquip(RhandLayer())
         Wait(2000)
+    UOSay(".checkDeed 1")
+    Wait(100)
+    UOSay(".checkExcept 1")
+    Wait(100)
+    UOSay(".checkPerfect 1")
+    Wait(100)
     UOSay(".autoloop 10")
-    if IsObjectExists(TOOL_CHEST):
-        UseObject(TOOL_CHEST)
-        Wait(2000)
-    else:
-        log("Tool chest not found!", "CRITICAL")
+    Wait(100)
 
 if __name__ == "__main__":
     init()
