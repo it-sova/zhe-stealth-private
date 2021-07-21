@@ -43,13 +43,13 @@ def cut_sheep(serial: int):
             AddToSystemJournal("Unable to get close to sheep!")
 
 def unload_wool():
-    if newMoveXY(GetX(CHEST), GetY(CHEST), True, 1, True):
-        if FindType(WOOL, Backpack()):
+    if FindType(WOOL, Backpack()):
+        if newMoveXY(GetX(CHEST), GetY(CHEST), True, 1, True):
             MoveItem(FindItem(), -1, CHEST, 0, 0, 0)
             Wait(2000)
-        AddToSystemJournal("Unloaded")
-    else:
-        AddToSystemJournal("Failed to reach chest")
+            AddToSystemJournal("Unloaded")
+        else:
+            AddToSystemJournal("Failed to reach chest")
 
 if __name__ == "__main__":
     SetARStatus(True)
