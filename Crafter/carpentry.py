@@ -1,4 +1,3 @@
-from Scripts.Crafter.mining import grab_from_container
 from py_stealth.methods import *
 from datetime import datetime as dt
 import inspect
@@ -149,7 +148,7 @@ if __name__ == "__main__":
             #full_disconnect()
 
         if not FindType(SAW_TYPE, Backpack()):
-            grab_from_container(SAW_TYPE, -1, 1, TOOL_CHEST)
+            get_item_from_container(SAW_TYPE, -1, TOOL_CHEST, "Saw")
 
         craft_item(item_to_craft)
         #if FindType(resulting_item, Backpack()):

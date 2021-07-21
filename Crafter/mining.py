@@ -17,8 +17,8 @@ ORE = 0x19B9
 INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-WEIGHT_LIMIT = MaxWeight() - 60
-WEIGHT_TO_UNLOAD = MaxWeight() - 100
+WEIGHT_LIMIT = MaxWeight() - 60 if MaxWeight() < 400 else 400
+WEIGHT_TO_UNLOAD = MaxWeight() - 100 if MaxWeight() < 400 else 300
 KEEP_TOOLS = 3
 GEMS = [
     0x0F10, # Emeralds
@@ -359,6 +359,7 @@ if __name__ == "__main__":
     SetARStatus(True)
     SetPauseScriptOnDisconnectStatus(True)
     SetWarMode(False)
+    log(f"Weight limit: {WEIGHT_LIMIT}, unload at {WEIGHT_TO_UNLOAD}")
     while not Dead() and Connected():
         move_x_y(config["start_point"]["x"], config["start_point"]["y"])
         for tile_set in find_tiles(GetX(Self()), GetY(Self()), TILE_SEARCH_RANGE):

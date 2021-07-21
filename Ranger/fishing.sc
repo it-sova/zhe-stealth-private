@@ -16,13 +16,13 @@ s: boolean;
 
 const
 {Настройка контейнеров: Указать ID контейнеров}
-WoodChest = $4568B2AE; //Сундук с удачками.
-mainbag   = $45693B64; //Сумка в которую будет соберать гп и ракушки.
-Trash     = $4561F779; //Мусорка, будет выкидывать морскую траву и пустые сумки.
-Map       = $45693B64; //Сундук с картами.если не нужны, ставим айди треша.
-SOS       = $4561F779; //Сундук с сос картами.если не нужны, ставим айди треша.
-net       = $45693B64; //Сундук с сетями. если сети не нужны, ставим айди треша.
-trap      = $4569414C; //трап лодки
+WoodChest = $4C18B024; //Сундук с удачками.
+mainbag   = $4C18B024; //Сумка в которую будет соберать гп и ракушки.
+Trash     = $4C0A95DE; //Мусорка, будет выкидывать морскую траву и пустые сумки.
+Map       = $4C0A95DE; //Сундук с картами.если не нужны, ставим айди треша.
+SOS       = $4C0A95DE; //Сундук с сос картами.если не нужны, ставим айди треша.
+net       = $4C0A95DE; //Сундук с сетями. если сети не нужны, ставим айди треша.
+trap      = $4C010610; //трап лодки
 {Конец настройки контейнеров}
 {Ракушки}
 SeaDollar     = $0FC8;
@@ -35,7 +35,7 @@ DiviniaShells = $0FC9;
 {/Ракушки. Если Есть еще ракушки, будут добовалятся}
 
 fishpole      = $0DC0;  //тайп удочек
-fishpolecolor = $093D;  //цвет удочек
+fishpolecolor = $0000;  //цвет удочек
 dagger        = $0F51;
 steak         = $097A;
 
@@ -46,7 +46,7 @@ begin
   repeat
     Ignore(mainbag);
     findtype($0e75, ground);
-    if (FindCount >= 1) and (GetDistance(finditem) <=2) and (GetDistance(finditem) >=0) and connected and (not dead) then begin // 
+    if (FindCount >= 1) and (GetDistance(finditem) <=2) and (GetDistance(finditem) >=0) and connected and (not dead) then begin //
       bag := finditem;
       useobject(bag);
       CheckLag (30000);
@@ -57,10 +57,10 @@ begin
         wait(500);
       end;
       findtypeEx($0EED,$0000,bag,True);
-      if (FindCount > 0) then begin 
+      if (FindCount > 0) then begin
         MoveItem(findtype($0EED,bag), 0, mainbag, 0, 0, 0);
         CheckLag (30000);
-        wait(500);   
+        wait(500);
       end;
       begin
         FindTypeEx(bag,$0000,ground,false);
@@ -93,7 +93,7 @@ begin
         MoveItem(finditem, 0, mainbag, 0, 0, 0);
         CheckLag (30000);
         wait(500);
-      end;   
+      end;
       FindType(SeaNymphs, backpack);
       if (FindCount >= 1) and (GetDistance(finditem) <=2) and (GetDistance(finditem) >=0) and connected and (not dead) then begin
         MoveItem(finditem, 0, mainbag, 0, 0, 0);
@@ -117,19 +117,19 @@ begin
         MoveItem(finditem, 0, mainbag, 0, 0, 0);
         CheckLag (30000);
         wait(500);
-      end;  
+      end;
       FindType($1F03, backpack);
       if (FindCount >= 1) and (GetDistance(finditem) <=2) and (GetDistance(finditem) >=0) and connected and (not dead) then begin
         MoveItem(finditem, 0, Trash, 0, 0, 0);
         CheckLag (30000);
         wait(500);
-      end; 
+      end;
       FindType($1F03, ground);
       if (FindCount >= 1) and (GetDistance(finditem) <=2) and (GetDistance(finditem) >=0) and connected and (not dead) then begin
         MoveItem(finditem, 0, Trash, 0, 0, 0);
         CheckLag (30000);
         wait(500);
-      end;    
+      end;
     until (FindCount < 1) or dead;
 end;
 
@@ -186,21 +186,20 @@ begin
   until (FindCount < 1) or dead;
 end;
 
-
 procedure Rawsteak;
   begin
     FindDistance := 2;
-    FindTypeEx(steak,$0000,backpack,true); 
-    if FindQuantity > 100 then 
+    FindTypeEx(steak,$0000,backpack,true);
+    if FindQuantity > 100 then
         begin
           Stack(steak,$0000);
           CheckLag (30000);
           wait(500);
           FindType(steak,Ground);
           Addtosystemjournal(IntToStr(FindFullQuantity) + ' стейков.');
-        end; 
-  end; 
-  
+        end;
+  end;
+
 procedure CheckRawsteak;
  begin
    FindType(steak, Backpack);
@@ -208,7 +207,7 @@ procedure CheckRawsteak;
    begin
       Rawsteak;
    end;
-end;  
+end;
 
 procedure CheckDagger;
 begin
@@ -217,8 +216,8 @@ begin
   end;
 end;
 
- 
- 
+
+
 procedure CheckWaterTile;
 var
 t: integer;
@@ -255,13 +254,13 @@ begin
   end;
   WaterCount:=c-1;
 end;
-                
+
 procedure CheckEquip;
 begin
   FindDistance := 2;
   if (not dead) and (connected) then
   begin
-   FindTypeEx(fishpole,fishpolecolor,WoodChest,True); 
+   FindTypeEx(fishpole,fishpolecolor,WoodChest,True);
    if FindQuantity = 0 then
     begin
      useobject(WoodChest);
@@ -274,15 +273,15 @@ begin
        UnEquip(LHandLayer);
        checklag(30000);
        wait(500);
-       FindTypeEx(fishpole,fishpolecolor,WoodChest,True); 
-       Equip(LhandLayer, finditem); 
+       FindTypeEx(fishpole,fishpolecolor,WoodChest,True);
+       Equip(LhandLayer, finditem);
        checklag(30000);
        wait(500);
      end;
- end; 
  end;
- 
-     
+ end;
+
+
 procedure CheckLaq; //если из-за лага удочка упадет в пак, она вернется в сундук.
   begin
    FindTypeEx(fishpole,fishpolecolor,backpack,True);
@@ -297,7 +296,7 @@ procedure CheckLaq; //если из-за лага удочка упадет в �
 procedure OnRejectMoveItem(Reason: Byte);
 begin
   AddToSystemJournal('Event! Muver');
-end; 
+end;
 
 procedure Fishing;
 begin
@@ -306,7 +305,7 @@ begin
   wait(500);
   for a:=0 to WaterCount do
   begin
-    hungry (1,ground);
+    hungry (1,-1);
     checklag(30000);
     if WaterPlace[a].a = 1 then begin
       WaitTargetTile(WaterPlace[a].t, WaterPlace[a].x, WaterPlace[a].y, WaterPlace[a].z);
@@ -319,7 +318,7 @@ begin
       CheckEquip;
       wait(500);
       end;
-      hungry (1,ground);
+      hungry (1,-1);
       UseObject(ObjAtLayer(LhandLayer));
       WaitJournalLine(Now,'You finished|see that|seem to get any fish here|You stop fishing|',100000);
       SetEventProc(evRejectMoveItem,'OnRejectMoveItem');
@@ -336,7 +335,34 @@ begin
   end;
 end;
 
+procedure OnSpeech(Text, SenderName : String; SenderId : Cardinal);
+  var
+      DangerousMessages: array[0..3] of string;
+      Danger: boolean;
+      Counter: integer;
+  begin
+      DangerousMessages[0] := 'elemental';
+      DangerousMessages[1] := 'alligator';
+      DangerousMessages[2] := 'serpent';
+      DangerousMessages[3] := 'attacking';
+      Danger := false;
+      for Counter := 0 to 3 do
+      begin
+          if BMSearch(1, Text, DangerousMessages[Counter]) > 0 then
+          begin
+              Danger := true;
+              AddToSystemJournal('Dangerous message: '+DangerousMessages[Counter]);
+          end;
+      end;
+      if Danger then
+      begin
+          AddToSystemJournal('Guarded');
+          UOSay('.guards');
+      end;
+  end;
+
 begin
+  SetEventProc(evSpeech, 'OnSpeech');
   SetARStatus(true);
   UOSay('.autoloop 10');
   useobject(WoodChest);
@@ -355,19 +381,19 @@ begin
   WaterTile[6]:=6044;
   FindWaterTile;
   AddToSystemJournal('Найдено тайлов для рыбалки: '+IntToStr(WaterCount));
-while s do 
+while s do
  begin
-  while not Dead and connected do 
+  while not Dead and connected do
    begin
     CheckDagger;
     CheckEquip;
     Fishing;
    end;
-  while Dead and connected do 
+  while Dead and connected do
    begin
     wait(1000);
    end;
-  while not connected do 
+  while not connected do
    begin
     wait(1000);
    end;

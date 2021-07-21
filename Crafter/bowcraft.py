@@ -1,12 +1,10 @@
-from Scripts.Crafter.mining import grab_from_container
 from py_stealth.methods import *
 from datetime import datetime as dt
 import inspect
 
-TINKER_TOOLS = 0x1EBC
+DAGGER = 0x0F51
 TOOL_CHEST = 0x4C18AFE8
 LOGS = 0x1BDD
-INGOTS = 0x1BF2
 TRASH = 0x4C1A6AB0
 FOOD = 0x097B
 
@@ -16,37 +14,28 @@ def get_target_item_and_category(classed: bool = True) -> list[str, str, str, in
     # Classed crafters have -5 skill requirement to craft item
     # So take default value from table and reduce it if character is classed
     # If it's not a crafter - bad for you
-    skill_value = GetSkillValue("Tinkering")
-    if skill_value <= 41 - classed_bonus:
-        return {"menu_items": ["Tools", "Froe"],
-                "resulting_items_types": [0x10E5],
-                "resource_type": INGOTS,
-                "resource_color": 0x0602,
-                "resource_name": "ingots"}
-    elif skill_value <= 60 - classed_bonus:
-        return {"menu_items": ["Tools", "lockpick"],
-                "resulting_items_types": [0x14FB],
-                "resource_type": INGOTS,
-                "resource_color": 0x0602,
-                "resource_name": "ingots"}
-    elif skill_value <= 64 - classed_bonus:
-        return {"menu_items": ["Kitchenware", "Frying"],
-                "resulting_items_types": [0x097F],
-                "resource_type": INGOTS,
-                "resource_color": 0x0602,
-                "resource_name": "ingots"}
-    elif skill_value <= 80 - classed_bonus:
-        return {"menu_items": ["Tools", "Heating"],
-                "resulting_items_types": [0x1849],
-                "resource_type": INGOTS,
-                "resource_color": 0x0602,
-                "resource_name": "ingots"}
+    skill_value = GetSkillValue("Bowcraft")
+    if skill_value <= 40 - classed_bonus:
+        return {"menu_items": ["Stuff", "Kindling"],
+                "resulting_items_types": [0x0DE1],
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_name": "logs",
+                "keep_resulting_item": True}
+    elif skill_value <= 75 - classed_bonus:
+        return {"menu_items": ["Stuff", "Shaft"],
+                "resulting_items_types": [0x1BD4],
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_name": "logs",
+                "keep_resulting_item": True}
     else:
-        return {"menu_items": ["Tools", "Heating"],
-                "resulting_items_types": [0x1849],
-                "resource_type": INGOTS,
-                "resource_color": 0x0602,
-                "resource_name": "ingots"}
+        return {"menu_items": ["Stuff", "Shaft"],
+                "resulting_items_types": [0x1BD4],
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_name": "logs",
+                "keep_resulting_item": True}
 
 def cancel_targets() -> None:
     if TargetPresent():
@@ -94,7 +83,9 @@ def open_container():
         log("Tool chest not found!", "CRITICAL")
 
 def get_item_from_container(type: int, color: int, container: int, name: str = "") -> bool:
-    open_container()
+    if container != 0:
+        open_container()
+
     if FindTypeEx(type, color, container, False):
         Grab(FindItem(), 1)
         Wait(500)
@@ -109,17 +100,17 @@ def enough_resources(resource: int, color:int, name: str = ""):
 
 def craft_item(item_details: dict):
     log(f"Crafting {item_details['menu_items'][-1]}", "DEBUG")
-    if FindTypeEx(item_details["resource_type"], item_details["resource_color"], Ground(), False):
+    if FindTypeEx(item_details["resource_type"], item_details["resource_color"], Backpack(), False):
         _started = dt.now()
         CancelAllMenuHooks()
         cancel_targets()
         WaitTargetObject(FindItem())
-        UseType(TINKER_TOOLS, 0xFFFF)
+        UseType(DAGGER, 0xFFFF)
         Wait(500)
         for category in item_details['menu_items']:
             WaitMenu("What", category)
-        WaitJournalLine(_started, "finished|aborted", 600000)
-    Wait(500)
+        WaitJournalLine(_started, "You stop to", 600000)
+    Wait(1000)
 
 def full_disconnect():
     SetARStatus(False)
@@ -165,14 +156,18 @@ if __name__ == "__main__":
             log("No food or resources!", "CRITICAL")
             #full_disconnect()
 
-        if not FindType(TINKER_TOOLS, Backpack()):
-            grab_from_container(TINKER_TOOLS, -1, 1, TOOL_CHEST)
+        if not FindType(DAGGER, Backpack()):
+            get_item_from_container(DAGGER, 1, TOOL_CHEST, "Dagger")
+
+        if not FindType(crafting_details["resource_type"], Backpack()):
+            get_item_from_container(crafting_details["resource_type"], 0x0000, Ground())
 
         craft_item(crafting_details)
-        #if FindType(resulting_item, Backpack()):
+        destination_container = TOOL_CHEST if crafting_details["keep_resulting_item"] else TRASH
+
         if FindTypesArrayEx(crafting_details["resulting_items_types"], [crafting_details["resource_color"]], [Backpack()], [False]):
             for item in GetFoundList():
-                MoveItem(item, -1, TRASH, 0, 0, 0)
+                MoveItem(item, -1, destination_container, 0, 0, 0)
                 Wait(1000)
         Wait(100)
 
