@@ -2,7 +2,7 @@ from py_stealth.methods import *
 from datetime import datetime as dt
 
 
-TARGETS = [0x00CF, 0x00DF]
+TARGETS = [0x00CF, 0x00DF, 0x00D3, 0x00DC, 0x0005]
 FOOD = 0x097B
 
 def find_targets(types: list[int]) -> list[int]:
@@ -16,12 +16,12 @@ def find_targets(types: list[int]) -> list[int]:
 def train(targets: list[int]) -> None:
     if len(targets) > 0:
         for target in targets:
-            if newMoveXY(GetX(target), GetY(target), True, 1, True):
-                started = dt.now()
-                WaitTargetObject(target)
-                UseSkill("Anatomy")
-                WaitJournalLine(started, "Stamina", 10000)
-                Wait(10000)
+            #if newMoveXY(GetX(target), GetY(target), True, 1, True):
+            started = dt.now()
+            WaitTargetObject(target)
+            UseSkill("Anatomy")
+            WaitJournalLine(started, "Stamina", 10000)
+            Wait(10000)
     else:
         AddToSystemJournal("No targets found")
         Wait(5000)

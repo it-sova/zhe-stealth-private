@@ -1,4 +1,3 @@
-from Scripts.Crafter.mining import INGOTS
 from py_stealth.methods import *
 from datetime import datetime as dt
 import inspect
@@ -183,6 +182,7 @@ if __name__ == "__main__":
         craft_item(item_to_craft)
         if not FindType(TONGS_TYPE, Backpack()):
             get_item_from_container(TONGS_TYPE, -1, TOOL_CHEST, "Tongs")
+            Wait(5000)
         smelt(item_to_craft)
 
         Wait(100)

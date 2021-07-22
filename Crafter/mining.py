@@ -17,8 +17,8 @@ ORE = 0x19B9
 INGOTS = 0x1BF2
 COPPER_COLOR = 0x0602
 TINKER_TOOLS = 0x1EBC
-WEIGHT_LIMIT = MaxWeight() - 60 if MaxWeight() < 400 else 400
-WEIGHT_TO_UNLOAD = MaxWeight() - 100 if MaxWeight() < 400 else 300
+WEIGHT_LIMIT = MaxWeight() - 60 if MaxWeight() < 350 else 350
+WEIGHT_TO_UNLOAD = MaxWeight() - 100 if MaxWeight() < 350 else 250
 KEEP_TOOLS = 3
 GEMS = [
     0x0F10, # Emeralds
