@@ -20,6 +20,7 @@ def get_target_item_and_category(classed: bool = True) -> list[str, str, str, in
                 "resulting_items_types": [0x0DE1],
                 "resource_type": LOGS,
                 "resource_color": 0x0000,
+                "resource_qty": 1,
                 "resource_name": "logs",
                 "keep_resulting_item": True}
     elif skill_value <= 75 - classed_bonus:
@@ -27,15 +28,41 @@ def get_target_item_and_category(classed: bool = True) -> list[str, str, str, in
                 "resulting_items_types": [0x1BD4],
                 "resource_type": LOGS,
                 "resource_color": 0x0000,
+                "resource_qty": 1,
                 "resource_name": "logs",
                 "keep_resulting_item": True}
-    else:
-        return {"menu_items": ["Stuff", "Shaft"],
-                "resulting_items_types": [0x1BD4],
+    elif skill_value <= 85 - classed_bonus:
+        return {"menu_items": ["Weapons", "Bow"],
+                "resulting_items_types": [0x13B2],
                 "resource_type": LOGS,
                 "resource_color": 0x0000,
+                "resource_qty": 80,
                 "resource_name": "logs",
-                "keep_resulting_item": True}
+                "keep_resulting_item": False}
+    elif skill_value <= 90 - classed_bonus:
+        return {"menu_items": ["Weapons", "Crossbow"],
+                "resulting_items_types": [0x0F4F],
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_qty": 120,
+                "resource_name": "logs",
+                "keep_resulting_item": False}
+    elif skill_value <= 150 - classed_bonus:
+        return {"menu_items": ["Weapons", "Heavy Crossbow"],
+                "resulting_items_types": [0x13FD],
+                "resource_type": LOGS,
+                "resource_color": 0x0362,
+                "resource_qty": 160,
+                "resource_name": "logs",
+                "keep_resulting_item": False}
+    else:
+        return {"menu_items": ["Weapons", "Heavy Crossbow"],
+                "resulting_items_types": [0x13FD],
+                "resource_type": LOGS,
+                "resource_color": 0x0362,
+                "resource_qty": 160,
+                "resource_name": "logs",
+                "keep_resulting_item": False}
 
 def cancel_targets() -> None:
     if TargetPresent():
@@ -69,12 +96,12 @@ def open_container():
     if IsObjectExists(TOOL_CHEST):
         while LastContainer() != Backpack():
             UseObject(Backpack())
-            Wait(1000)
+            Wait(2000)
 
         _try = 0
         while LastContainer() != TOOL_CHEST:
             UseObject(TOOL_CHEST)
-            Wait(100)
+            Wait(2000)
             _try += 1
             if _try >= 10:
                 log("Failed to open tool chest 10 times a row", "CRITICAL")
@@ -82,13 +109,13 @@ def open_container():
     else:
         log("Tool chest not found!", "CRITICAL")
 
-def get_item_from_container(type: int, color: int, container: int, name: str = "") -> bool:
+def get_item_from_container(type: int, color: int, container: int, name: str = "", qty: int = 1) -> bool:
     if container != 0:
         open_container()
 
     if FindTypeEx(type, color, container, False):
-        Grab(FindItem(), 1)
-        Wait(500)
+        Grab(FindItem(), qty)
+        Wait(2000)
         if len(name) > 0:
             log(f"{name} left in container: {FindCount()}")
         return FindTypeEx(type, color, Backpack(), False)
@@ -146,6 +173,7 @@ def init() -> None:
 if __name__ == "__main__":
     init()
     classed = is_classed()
+    Wait(2000)
     while not Dead() and Connected():
         crafting_details = get_target_item_and_category(classed)
 
@@ -157,10 +185,10 @@ if __name__ == "__main__":
             #full_disconnect()
 
         if not FindType(DAGGER, Backpack()):
-            get_item_from_container(DAGGER, 1, TOOL_CHEST, "Dagger")
+            get_item_from_container(DAGGER, 0xFFFF, TOOL_CHEST, "Dagger")
 
-        if not FindType(crafting_details["resource_type"], Backpack()):
-            get_item_from_container(crafting_details["resource_type"], 0x0000, Ground())
+        if not FindType(crafting_details["resource_type"], Backpack()) or FindQuantity() < crafting_details["resource_qty"]:
+            get_item_from_container(crafting_details["resource_type"], crafting_details["resource_color"], Ground(), crafting_details["resource_name"], crafting_details["resource_qty"])
 
         craft_item(crafting_details)
         destination_container = TOOL_CHEST if crafting_details["keep_resulting_item"] else TRASH

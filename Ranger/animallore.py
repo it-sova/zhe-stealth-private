@@ -16,12 +16,12 @@ def find_targets(types: list[int]) -> list[int]:
 def train(targets: list[int]) -> None:
     if len(targets) > 0:
         for target in targets:
-            if newMoveXY(GetX(target), GetY(target), True, 1, True):
-                started = dt.now()
-                WaitTargetObject(target)
-                UseSkill("Animal Lore")
-                WaitJournalLine(started, "not sure|Looks|The animal", 10000)
-                Wait(10000)
+            #if newMoveXY(GetX(target), GetY(target), True, 1, True):
+            started = dt.now()
+            WaitTargetObject(target)
+            UseSkill("Animal Lore")
+            WaitJournalLine(started, "not sure|Looks|The animal", 10000)
+            Wait(10000)
     else:
         AddToSystemJournal("No targets found")
         Wait(5000)

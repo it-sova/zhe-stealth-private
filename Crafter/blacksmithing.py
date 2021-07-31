@@ -123,12 +123,17 @@ def craft_item(item_details: list[str]):
 
 def smelt(item_details: list[str]):
     item_type = item_details[-1]
-    while FindTypeEx(item_type, COLOR, Backpack(), False):
-        _started = dt.now()
-        cancel_targets()
-        WaitTargetObject(FindItem())
-        UseType(TONGS_TYPE, -1)
-        WaitJournalLine(_started, "finished|aborted", 600000)
+    if FindTypeEx(item_type, COLOR, Backpack(), False):
+        for smelting_item in GetFoundList():
+            if not FindType(TONGS_TYPE, Backpack()):
+                get_item_from_container(TONGS_TYPE, -1, TOOL_CHEST, "Tongs")
+                Wait(5000)
+            if IsObjectExists(smelting_item):
+                _started = dt.now()
+                cancel_targets()
+                WaitTargetObject(smelting_item)
+                UseType(TONGS_TYPE, -1)
+                WaitJournalLine(_started, "finished|cannot be|aborted", 600000)
     if FindTypeEx(INGOTS, COLOR, Backpack(), False):
         Wait(2000)
         ingots = FindItem()
@@ -136,12 +141,12 @@ def smelt(item_details: list[str]):
             log("Stacking ingots...","DEBUG")
             log(f"Ingots on floor before stacking: {FindFullQuantity()}", "DEBUG")
             MoveItem(ingots, -1, FindItem(), 0, 0, 0)
-            Wait(200)
+            Wait(2000)
             if FindTypeEx(INGOTS, COLOR, Ground(), False):
                 log(f"Ingots on floor after stacking: {FindFullQuantity()}", "DEBUG")
         else:
             DropHere(ingots)
-            log("No ingots on floor left, dropping","DEBUG")
+            log("No ingots on floor found, dropping","DEBUG")
 
 def full_disconnect():
     SetARStatus(False)
@@ -180,9 +185,6 @@ if __name__ == "__main__":
                 get_and_equip_tool()
 
         craft_item(item_to_craft)
-        if not FindType(TONGS_TYPE, Backpack()):
-            get_item_from_container(TONGS_TYPE, -1, TOOL_CHEST, "Tongs")
-            Wait(5000)
         smelt(item_to_craft)
 
         Wait(100)

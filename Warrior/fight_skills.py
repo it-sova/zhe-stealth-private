@@ -9,6 +9,7 @@ import os
 
 FOOD = 0x097B
 BANDAGES = 0x0E21
+BLOODY_BANDAGES = 0x0E20
 EQUIP_CHEST = 0x4C18AFB3
 
 
@@ -109,21 +110,41 @@ def equip_item_on_layer(type: int, layer: int, name: str = ""):
             Wait(2000)
         else:
             if get_item_from_container(type, -1, EQUIP_CHEST, name):
-                print(f"Rearm {name}")
+                log(f"Rearm {name}")
                 equip_item_on_layer(type, layer)
             else:
                 log("Unable to get shield from container!")
 
+def drop_dirty_bandages() -> None:
+    if FindType(BLOODY_BANDAGES, Backpack()):
+        bloody_bandages = FindItem()
+        if FindType(BLOODY_BANDAGES, Ground()):
+            MoveItem(bloody_bandages, -1, FindItem(), 0, 0, 0)
+        else:
+            DropHere(bloody_bandages)
+        log("Dropped bloody bandages")
+        Wait(2000)
+
+def check_enemy_hp(enemy: int):
+    if IsObjectExists(enemy):
+        while GetHP(enemy) < 600:
+            SetWarMode(False)
+            Wait(100)
 
 
 def heal(threshold: int):
     heal_at = MaxHP() / 100 * threshold
-    if HP() <= heal_at:
+
+    if HP() <= int(heal_at):
+        #AddToSystemJournal(f"Healing at : {int(heal_at)}/{HP()}")
         _start = dt.now()
         if FindType(BANDAGES, Ground()):
+            log(f"Bandages left: {FindFullQuantity()}")
             WaitTargetSelf()
             UseObject(FindItem())
             WaitJournalLine(_start, "Bloody Bandages|cure|poison", 10000)
+            Wait(100)
+            drop_dirty_bandages()
         else:
             log("No bandages found")
 
@@ -139,6 +160,7 @@ if __name__ == "__main__":
     to_start()
     loop = 0
     while not Dead() and Connected():
+        check_enemy_hp(combat["target"])
         heal(combat["healing_threshold"])
 
         if not combat["two_handed"]:
@@ -150,11 +172,7 @@ if __name__ == "__main__":
         if IsObjectExists(combat["target"]):
             Attack(combat["target"])
 
-        if HP() < 40:
-            to_safety()
-            while HP() < 40:
-                heal(combat["healing_threshold"])
-            to_start()
+
         loop += 1
         if loop > 20:
             hungry(Ground())

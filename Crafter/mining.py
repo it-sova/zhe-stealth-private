@@ -351,8 +351,15 @@ def mine(tile: int, x: int, y: int, z: int) -> None:
             log("Can't equip pickaxe, heading to bank to craft some", "DEBUG")
             unload_to_bank()
 
-if __name__ == "__main__":
+def handle_attack(text: str, sender_name: str, sender_id: int):
+    if "attacking" in text:
+        UOSay("Suck my pickaxe, retard")
+        log(f"{sender_name} is attacking me", "INFO")
+        UOSay(".guards")
 
+
+if __name__ == "__main__":
+    SetEventProc("evSpeech", handle_attack)
     ClearSystemJournal()
     config = get_character_config()
     UOSay(".autoloop 100")

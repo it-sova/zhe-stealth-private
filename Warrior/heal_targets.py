@@ -2,14 +2,14 @@ from py_stealth.methods import *
 from datetime import datetime as dt
 
 BANDAGES = 0x0E21
-TARGETS = [0x0027E98E, 0x00247664]
+TARGETS = [0x00287C80, 0x00285CEB]
 
 def heal(target: int):
     _start = dt.now()
     if FindType(BANDAGES, -1):
         WaitTargetObject(target)
         UseObject(FindItem())
-        WaitJournalLine(_start, "Bloody Bandages|cure|poison", 10000)
+        WaitJournalLine(_start, "Bloody Bandages", 30000)
     else:
         AddToSystemJournal("No bandages found")
 
