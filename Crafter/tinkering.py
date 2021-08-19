@@ -1,4 +1,3 @@
-from Scripts.Crafter.mining import grab_from_container
 from py_stealth.methods import *
 from datetime import datetime as dt
 import inspect
@@ -11,7 +10,7 @@ TRASH = 0x4C1A6AB0
 FOOD = 0x097B
 
 
-def get_target_item_and_category(classed: bool = True) -> list[str, str, str, int]:
+def get_target_item_and_category(classed: bool = True) -> dict:
     classed_bonus = 5 if classed else 0
     # Classed crafters have -5 skill requirement to craft item
     # So take default value from table and reduce it if character is classed
@@ -41,17 +40,50 @@ def get_target_item_and_category(classed: bool = True) -> list[str, str, str, in
                 "resource_type": INGOTS,
                 "resource_color": 0x0602,
                 "resource_name": "ingots"}
-    else:
-        return {"menu_items": ["Tools", "Heating"],
-                "resulting_items_types": [0x1849],
-                "resource_type": INGOTS,
-                "resource_color": 0x0602,
-                "resource_name": "ingots"}
+    elif skill_value <= 102 - classed_bonus:
+        return {"menu_items": ["Paper", "Blank Map"],
+                "resulting_items_types": [0x14EB],
+                "resulting_item_name": "Blank maps",
+                "keep_resulting_item" : True,
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_name": "logs"}
+    elif skill_value <= 2000 - classed_bonus:
+        return {"menu_items": ["Paper", "3 Blank Maps"],
+                "resulting_items_types": [0x14EB],
+                "resulting_item_name": "Blank maps",
+                "keep_resulting_item" : True,
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_name": "logs"}
+    elif skill_value <= 3000 - classed_bonus:
+        return {"menu_items": ["Paper", "5 Blank Maps"],
+                "resulting_items_types": [0x14EB],
+                "resulting_item_name": "Blank maps",
+                "keep_resulting_item" : True,
+                "resource_type": LOGS,
+                "resource_color": 0x0000,
+                "resource_name": "logs"}
 
 def cancel_targets() -> None:
     if TargetPresent():
         CancelTarget()
     CancelWaitTarget()
+
+def stack_in_container(type: int, color: int, container: int, name: str = ""):
+    if FindTypeEx(type, color, Backpack(), False):
+        item = FindItem()
+        item_quantity = FindQuantity()
+        if FindTypeEx(type, color, container, False):
+            MoveItem(item, -1, FindItem(), GetX(FindItem()), GetY(FindItem()), GetZ(FindItem()))
+            stacked_quantity = FindFullQuantity()
+        else:
+            DropHere(item)
+            stacked_quantity = 0
+        Wait(2000)
+        if name:
+            log(f"{name} stacked: {stacked_quantity + item_quantity}")
+
 
 def log(message: str, level: str = "DEBUG") -> None:
     _verbosity_level = {
@@ -85,7 +117,7 @@ def open_container():
         _try = 0
         while LastContainer() != TOOL_CHEST:
             UseObject(TOOL_CHEST)
-            Wait(100)
+            Wait(1000)
             _try += 1
             if _try >= 10:
                 log("Failed to open tool chest 10 times a row", "CRITICAL")
@@ -166,13 +198,15 @@ if __name__ == "__main__":
             #full_disconnect()
 
         if not FindType(TINKER_TOOLS, Backpack()):
-            grab_from_container(TINKER_TOOLS, -1, 1, TOOL_CHEST)
+            get_item_from_container(TINKER_TOOLS, 0xFFFF, TOOL_CHEST, "Tinker tool")
 
         craft_item(crafting_details)
         #if FindType(resulting_item, Backpack()):
         if FindTypesArrayEx(crafting_details["resulting_items_types"], [crafting_details["resource_color"]], [Backpack()], [False]):
+            move_to = TRASH if not crafting_details["keep_resulting_item"] else Ground()
             for item in GetFoundList():
-                MoveItem(item, -1, TRASH, 0, 0, 0)
+                #MoveItem(item, -1, move_to, 0, 0, 0)
+                stack_in_container(GetType(item), GetColor(item), move_to, crafting_details["resulting_item_name"])
                 Wait(1000)
         Wait(100)
 

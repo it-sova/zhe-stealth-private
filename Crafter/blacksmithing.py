@@ -6,7 +6,8 @@ HAMMER_TYPE = 0x13E3
 TONGS_TYPE = 0x0FBB
 TOOL_CHEST = 0x4C18AFE8
 INGOTS = 0x1BF2
-COLOR = 0x0602
+#COLOR = 0x0602
+COLOR = 0x0482
 FOOD = 0x097B
 
 
@@ -100,7 +101,7 @@ def enough_resources():
     return True if FindFullQuantity() > 100 else False
 
 def get_and_equip_tool() -> bool:
-    if get_item_from_container(HAMMER_TYPE, COLOR, TOOL_CHEST, "Hammer"):
+    if get_item_from_container(HAMMER_TYPE, 0xFFFF, TOOL_CHEST, "Hammer"):
         equip_tool()
 
     return tool_equipped()
@@ -155,7 +156,6 @@ def full_disconnect():
 
 def init() -> None:
     SetARStatus(True)
-    SetPauseScriptOnDisconnectStatus(True)
     ClearSystemJournal()
     if IsObjectExists(ObjAtLayer(RhandLayer())):
         UnEquip(RhandLayer())
@@ -171,23 +171,25 @@ def init() -> None:
 
 if __name__ == "__main__":
     init()
-    while not Dead() and Connected():
-        item_to_craft = get_target_item_and_category()
-        if not hungry() or not enough_resources():
-            log("No food or resources!", "CRITICAL")
-            #full_disconnect()
+    while 1:
+        while not Dead() and Connected():
+            item_to_craft = get_target_item_and_category()
+            if not hungry() or not enough_resources():
+                log("No food or resources!", "CRITICAL")
+                #full_disconnect()
 
-        if not tool_equipped():
-            if FindType(HAMMER_TYPE, Backpack()):
-                equip_tool()
-            else:
-                log("No tool equipped and no tool in backpack, time to get new", "DEBUG")
-                get_and_equip_tool()
+            if not tool_equipped():
+                if FindType(HAMMER_TYPE, Backpack()):
+                    equip_tool()
+                else:
+                    log("No tool equipped and no tool in backpack, time to get new", "DEBUG")
+                    get_and_equip_tool()
 
-        craft_item(item_to_craft)
-        smelt(item_to_craft)
+            craft_item(item_to_craft)
+            smelt(item_to_craft)
 
-        Wait(100)
+            Wait(100)
+        Wait(1000)
 
 
 
